@@ -6,36 +6,66 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { FounderAvatar, Logo } from "@/components/foundora/ui-bits";
-import { fetchIncomingInterests } from "@/lib/matching";
+import { fetchInboxMessages, fetchIncomingInterests } from "@/lib/matching";
 import { fetchMyProfile } from "@/lib/profile";
 import { signOutUser } from "@/lib/auth";
 import { clearFoundoraUserState } from "@/lib/foundora";
+import { unreadByMatch, useReadState } from "@/lib/notifications";
 
 const NAV = [
   { to: "/app", label: "Home" },
   { to: "/app/profile", label: "Profile" },
   { to: "/app/discover", label: "Discover" },
   { to: "/app/matches", label: "Matches" },
+  { to: "/app/chat", label: "Chat" },
   { to: "/app/workspace", label: "Workspace" },
 ] as const;
+
+function Badge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 export function AppShell({ children, userId }: { children: ReactNode; userId: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const readState = useReadState(userId);
 
   const incoming = useQuery({
     queryKey: ["incoming-interests", userId],
     queryFn: fetchIncomingInterests,
     refetchInterval: 30000,
   });
+  const inbox = useQuery({
+    queryKey: ["inbox-messages", userId],
+    queryFn: fetchInboxMessages,
+    refetchInterval: 15000,
+  });
   const profile = useQuery({
     queryKey: ["my-profile", userId],
     queryFn: () => fetchMyProfile(userId),
   });
-  const pendingCount = (incoming.data ?? []).filter(
-    (i) => !i.interest_sent && i.status === "pending",
+
+  const matchesCount = (incoming.data ?? []).filter(
+    (i) =>
+      !i.interest_sent &&
+      i.status === "pending" &&
+      new Date(i.created_at).getTime() > readState.matchesSeenAt,
   ).length;
+
+  const unread = unreadByMatch(
+    (inbox.data ?? []).filter((m) => m.sender_id !== userId),
+    readState,
+  );
+  const chatCount = Object.values(unread).reduce((a, b) => a + b, 0);
+
+  const badgeFor = (to: string) =>
+    to === "/app/matches" ? matchesCount : to === "/app/chat" ? chatCount : 0;
 
   const handleLogout = async () => {
     await queryClient.cancelQueries();
@@ -44,6 +74,8 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
     await signOutUser();
     navigate({ to: "/login", replace: true });
   };
+
+
 
 
   return (
