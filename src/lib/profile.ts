@@ -62,21 +62,45 @@ export function formToRow(form: FounderProfile, userId: string) {
   };
 }
 
+const PROFILE_COLUMNS =
+  "id, anonymous_name, real_name, skills, what_to_build, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits";
+
+function describe(error: { message: string; code?: string; details?: string; hint?: string }) {
+  if (error.code === "42501" || /row-level security/i.test(error.message)) {
+    return "Your account isn't allowed to write this profile. Please log out and log back in, then try again.";
+  }
+  const extra = [error.details, error.hint].filter(Boolean).join(" ");
+  return [error.message, extra].filter(Boolean).join(" — ");
+}
+
 /** Loads the signed-in user's own profile (RLS restricts this to the owner). */
 export async function fetchMyProfile(): Promise<ProfileRow | null> {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) return null;
+
   const { data, error } = await supabase
     .from("profiles")
-    .select(
-      "id, anonymous_name, real_name, skills, what_to_build, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits",
-    )
+    .select(PROFILE_COLUMNS)
+    .eq("id", userData.user.id)
     .maybeSingle();
-  if (error) throw error;
+  if (error) throw new Error(describe(error));
   return (data as ProfileRow | null) ?? null;
 }
 
 export async function upsertMyProfile(form: FounderProfile, userId: string) {
-  const { error } = await supabase.from("profiles").upsert(formToRow(form, userId));
-  if (error) throw error;
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(formToRow(form, userId), { onConflict: "id" })
+    .select(PROFILE_COLUMNS)
+    .maybeSingle();
+
+  if (error) throw new Error(describe(error));
+  if (!data) {
+    throw new Error(
+      "The profile was not saved (no row returned). Please log out, log back in, and try again.",
+    );
+  }
+  return data as ProfileRow;
 }
 
 /**
