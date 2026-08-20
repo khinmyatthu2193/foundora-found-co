@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CompatibilityCard } from "@/components/foundora/compatibility-card";
+import { GuidedConversation } from "@/components/foundora/guided-conversation";
+import { ProjectDirectionCard } from "@/components/foundora/project-direction-card";
+import { ProposalCard } from "@/components/foundora/proposal-card";
 import {
   EmptyState,
   FounderAvatar,
@@ -140,6 +143,23 @@ function ChatPage() {
         premium={plan.data === "premium"}
         otherName={other.anonymous_name}
       />
+
+      <GuidedConversation
+        className="mt-4"
+        userId={user.id}
+        matchId={matchId}
+        premium={plan.data === "premium"}
+      />
+
+      <ProjectDirectionCard className="mt-4" userId={user.id} matchId={matchId} />
+
+      <ProposalCard
+        className="mt-4"
+        userId={user.id}
+        matchId={matchId}
+        premium={plan.data === "premium"}
+      />
+
 
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
         <div className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto p-5">

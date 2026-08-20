@@ -234,6 +234,91 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_project_directions: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          notes: string
+          problem: string
+          project_title: string
+          solution: string
+          target_users: string
+          updated_at: string
+          updated_by: string | null
+          why_now: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          notes?: string
+          problem?: string
+          project_title?: string
+          solution?: string
+          target_users?: string
+          updated_at?: string
+          updated_by?: string | null
+          why_now?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          notes?: string
+          problem?: string
+          project_title?: string
+          solution?: string
+          target_users?: string
+          updated_at?: string
+          updated_by?: string | null
+          why_now?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_project_directions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_proposals: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          match_id: string
+          proposal_json: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          match_id: string
+          proposal_json: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          match_id?: string
+          proposal_json?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_proposals_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
