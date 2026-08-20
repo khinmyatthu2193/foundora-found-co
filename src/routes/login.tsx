@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/foundora/ui-bits";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
 import { fetchMyProfile } from "@/lib/profile";
 
 
@@ -51,7 +52,9 @@ function LoginPage() {
     const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError || !data.user || !data.session) {
       setLoading(false);
-      setError(signInError?.message ?? "Login failed. Check your email and password.");
+      setError(
+        friendlyAuthError(signInError, "Email or password is incorrect. Please check and try again."),
+      );
       return;
     }
     // Route based on whether a founder profile already exists.
@@ -60,9 +63,7 @@ function LoginPage() {
       hasProfile = Boolean(await fetchMyProfile(data.user.id));
     } catch (profileError) {
       setLoading(false);
-      setError(
-        profileError instanceof Error ? profileError.message : "Could not load your profile.",
-      );
+      setError(friendlyAuthError(profileError, "Could not load your profile. Please try again."));
       return;
     }
     setLoading(false);

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyProgress, Section, Tag } from "@/components/foundora/ui-bits";
-import { useFoundora } from "@/lib/foundora";
+import { fetchMyMatches } from "@/lib/matching";
 import { fetchMyProfile } from "@/lib/profile";
 
 
@@ -34,17 +34,20 @@ export const Route = createFileRoute("/app/")({
 });
 
 function Dashboard() {
-  const { state } = useFoundora();
   const { user } = Route.useRouteContext();
   const { data: profile } = useQuery({
     queryKey: ["my-profile", user.id],
     queryFn: () => fetchMyProfile(user.id),
   });
+  const { data: matches } = useQuery({
+    queryKey: ["matches", user.id],
+    queryFn: fetchMyMatches,
+  });
   const hasProfile = Boolean(profile);
-  const matchCount = state.matches.length;
-  const workspaceReady = Object.values(state.matchState).some((m) => m.acceptMe && m.acceptThem);
+  const matchCount = matches?.length ?? 0;
+  const workspaceReady = matchCount > 0;
 
-  const step = workspaceReady ? 3 : matchCount > 0 ? 2 : hasProfile ? 1 : 0;
+  const step = matchCount > 0 ? 2 : hasProfile ? 1 : 0;
 
 
   const actions = [

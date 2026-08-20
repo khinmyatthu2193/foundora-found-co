@@ -124,220 +124,23 @@ export const GUIDED_PROMPTS = [
   "How would you split equity and responsibilities early on?",
 ];
 
-export const MOCK_FOUNDERS: MockFounder[] = [
-  {
-    id: "a27",
-    anonName: "Founder #A27",
-    realName: "Amara Osei",
-    skills: ["React", "UI/UX", "Product Management"],
-    industries: ["AI", "SaaS"],
-    hours: 25,
-    experience: "Experienced",
-    lookingFor: "Co-founder",
-    workingStyle: "Structured",
-    commitment: "Serious part-time",
-    traits: ["Communicative", "Product-minded", "Reliable"],
-    blurb: "Design-led product builder who ships weekly and loves early user interviews.",
-    instantMatch: true,
-  },
-  {
-    id: "b14",
-    anonName: "Founder #B14",
-    realName: "Dmitri Vaskov",
-    skills: ["Python", "Data", "Operations"],
-    industries: ["FinTech", "AI"],
-    hours: 35,
-    experience: "Intermediate",
-    lookingFor: "Co-founder",
-    workingStyle: "Fast-paced",
-    commitment: "Full-time ready",
-    traits: ["Technical", "Fast learner", "Strategic"],
-    blurb: "Backend and data engineer moving from consulting into full-time founding.",
-  },
-  {
-    id: "c08",
-    anonName: "Founder #C08",
-    realName: "Sofia Marin",
-    skills: ["Marketing", "Sales", "Business Strategy"],
-    industries: ["E-commerce", "Creator Economy"],
-    hours: 15,
-    experience: "Experienced",
-    lookingFor: "Co-founder",
-    workingStyle: "Collaborative",
-    commitment: "Part-time",
-    traits: ["Business-minded", "Communicative", "Creative"],
-    blurb: "Growth operator who has taken two consumer brands from zero to first revenue.",
-  },
-  {
-    id: "d31",
-    anonName: "Founder #D31",
-    realName: "Noah Bergström",
-    skills: ["React", "Python", "UI/UX"],
-    industries: ["EdTech", "AI"],
-    hours: 20,
-    experience: "Beginner",
-    lookingFor: "Teammate",
-    workingStyle: "Flexible",
-    commitment: "Exploring",
-    traits: ["Fast learner", "Creative", "Reliable"],
-    blurb: "Recent CS grad prototyping learning tools and looking for a first serious team.",
-  },
-  {
-    id: "e52",
-    anonName: "Founder #E52",
-    realName: "Priya Raman",
-    skills: ["Finance", "Business Strategy", "Operations"],
-    industries: ["HealthTech", "SaaS"],
-    hours: 30,
-    experience: "Experienced",
-    lookingFor: "Co-founder",
-    workingStyle: "Structured",
-    commitment: "Full-time ready",
-    traits: ["Strategic", "Reliable", "Business-minded"],
-    blurb: "Ex-healthcare operator focused on workflow tools for small clinics.",
-  },
-  {
-    id: "f19",
-    anonName: "Founder #F19",
-    realName: "Leo Ferreira",
-    skills: ["Data", "Python", "Product Management"],
-    industries: ["Sustainability", "AI"],
-    hours: 18,
-    experience: "Intermediate",
-    lookingFor: "Advisor",
-    workingStyle: "Independent",
-    commitment: "Part-time",
-    traits: ["Technical", "Product-minded", "Communicative"],
-    blurb: "Climate data specialist exploring measurement tools for small manufacturers.",
-  },
-];
+/* --------------------------- legacy local cleanup -------------------------- */
 
-export function founderById(id: string) {
-  return MOCK_FOUNDERS.find((f) => f.id === id);
-}
+const LEGACY_KEYS = ["foundora.state.v1"];
 
-/* ---------------------------------- store --------------------------------- */
-
-const KEY = "foundora.state.v1";
-const THEME_KEY = "foundora.theme";
-
-export const emptyDirection: ProjectDirection = {
-  title: "",
-  problem: "",
-  users: "",
-  solution: "",
-  notes: "",
-};
-
-export const emptyMatchState: MatchState = {
-  messages: [],
-  revealMe: false,
-  revealThem: false,
-  compatibility: false,
-  direction: emptyDirection,
-  proposal: false,
-  acceptMe: false,
-  acceptThem: false,
-};
-
-const initialState: FoundoraState = {
-  interested: [],
-  passed: [],
-  matches: [],
-  matchState: {},
-};
-
-let state: FoundoraState = initialState;
-let hydrated = false;
-const listeners = new Set<() => void>();
-
-function load(): FoundoraState {
-  if (typeof window === "undefined") return initialState;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return initialState;
-    return { ...initialState, ...(JSON.parse(raw) as FoundoraState) };
-  } catch {
-    return initialState;
-  }
-}
-
-function persist() {
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* ignore */
-  }
-}
-
-function emit() {
-  listeners.forEach((l) => l());
-}
-
-export function setState(updater: (s: FoundoraState) => FoundoraState) {
-  if (!hydrated && typeof window !== "undefined") {
-    state = load();
-    hydrated = true;
-  }
-  state = updater(state);
-  persist();
-  emit();
-}
-
+/** Clears any locally cached per-user data. Supabase is the only source of truth. */
 export function clearFoundoraUserState() {
-  state = initialState;
-  hydrated = true;
-  if (typeof window !== "undefined") {
-    window.localStorage.removeItem(KEY);
-  }
-  emit();
-}
-
-export function useFoundora() {
-  const [snapshot, setSnapshot] = useState<FoundoraState>(state);
-
-  useEffect(() => {
-    if (!hydrated) {
-      state = load();
-      hydrated = true;
+  if (typeof window === "undefined") return;
+  for (const key of LEGACY_KEYS) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      /* ignore */
     }
-    setSnapshot(state);
-    const l = () => setSnapshot({ ...state });
-    listeners.add(l);
-    return () => {
-      listeners.delete(l);
-    };
-  }, []);
-
-  const actions = {
-    pass: (id: string) =>
-      setState((s) => ({ ...s, passed: [...new Set([...s.passed, id])] })),
-    interested: (id: string) =>
-      setState((s) => {
-        const founder = founderById(id);
-        const matches = founder?.instantMatch
-          ? [...new Set([...s.matches, id])]
-          : s.matches;
-        return { ...s, interested: [...new Set([...s.interested, id])], matches };
-      }),
-    updateMatch: (id: string, patch: Partial<MatchState>) =>
-      setState((s) => ({
-        ...s,
-        matchState: {
-          ...s.matchState,
-          [id]: { ...emptyMatchState, ...(s.matchState[id] ?? {}), ...patch },
-        },
-      })),
-    reset: () => setState(() => initialState),
-  };
-
-  const getMatch = useCallback(
-    (id: string): MatchState => ({ ...emptyMatchState, ...(snapshot.matchState[id] ?? {}) }),
-    [snapshot],
-  );
-
-  return { state: snapshot, hydrated, getMatch, ...actions };
+  }
 }
+
+const THEME_KEY = "foundora.theme";
 
 /* ---------------------------------- theme --------------------------------- */
 

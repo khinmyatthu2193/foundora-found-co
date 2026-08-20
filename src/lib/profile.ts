@@ -27,6 +27,8 @@ export type DiscoveryFounder = {
   working_style: string | null;
   commitment_level: string | null;
   desired_partner_traits: string[];
+  interest_sent: boolean;
+  is_matched: boolean;
 };
 
 export function rowToForm(row: ProfileRow): FounderProfile {
