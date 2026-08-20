@@ -83,7 +83,7 @@ export function useMarkRead(userId: string) {
           queryKey: readStateQueryKey(userId),
           queryFn: fetchReadState,
         }));
-      const next = update(current);
+      const next = update(current ?? EMPTY);
       if (!next) return;
       queryClient.setQueryData(readStateQueryKey(userId), next);
       try {
