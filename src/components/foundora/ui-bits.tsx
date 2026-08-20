@@ -1,6 +1,7 @@
 import { Lock, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/foundora-logo.png.asset.json";
 
 export function Tag({
   children,
@@ -132,11 +133,14 @@ export function EmptyState({
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("flex items-center gap-2 font-semibold tracking-tight", className)}>
-      <span className="grid size-7 place-items-center rounded-lg bg-primary text-sm text-primary-foreground">
-        F
-      </span>
-      <span className="text-lg">Foundora</span>
+    <span className={cn("flex items-center", className)}>
+      <img
+        src={logoAsset.url}
+        alt="Foundora — find, match, build"
+        className="h-9 w-auto"
+        loading="eager"
+        decoding="async"
+      />
     </span>
   );
 }
