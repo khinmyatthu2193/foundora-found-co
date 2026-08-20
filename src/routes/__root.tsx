@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
+import { clearFoundoraUserState } from "@/lib/foundora";
 
 function NotFoundComponent() {
   return (
@@ -135,8 +137,44 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthStateSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
   );
+}
+
+function AuthStateSync() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    let currentUserId: string | null = null;
+    let initialized = false;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      currentUserId = data.user?.id ?? null;
+      initialized = true;
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      const nextUserId = session?.user.id ?? null;
+      const identityChanged = initialized && currentUserId !== nextUserId;
+      currentUserId = nextUserId;
+      initialized = true;
+
+      if (event === "SIGNED_OUT" || identityChanged) {
+        void queryClient.cancelQueries().then(() => queryClient.clear());
+        clearFoundoraUserState();
+      } else if (session) {
+        void queryClient.invalidateQueries();
+      }
+      void router.invalidate();
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, [queryClient, router]);
+
+  return null;
 }

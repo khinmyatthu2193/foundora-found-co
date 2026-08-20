@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pencil, RefreshCw, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, rowToForm, upsertMyProfile } from "@/lib/profile";
 
 import { Button } from "@/components/ui/button";
@@ -107,12 +106,14 @@ function Chips({
 
 function ProfilePage() {
   const queryClient = useQueryClient();
+  const { user } = Route.useRouteContext();
+  const profileQueryKey = ["my-profile", user.id] as const;
   const {
     data: profile,
     isLoading,
     error: loadError,
     refetch,
-  } = useQuery({ queryKey: ["my-profile"], queryFn: fetchMyProfile });
+  } = useQuery({ queryKey: profileQueryKey, queryFn: () => fetchMyProfile(user.id) });
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FounderProfile>(emptyProfile);
@@ -123,19 +124,19 @@ function ProfilePage() {
       setForm(rowToForm(profile));
       setEditing(false);
     } else if (profile === null) {
+      setForm(emptyProfile);
       setEditing(true);
     }
   }, [profile]);
 
   const saveMutation = useMutation({
     mutationFn: async (next: FounderProfile) => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) throw new Error("Your session expired. Please log in again.");
-      await upsertMyProfile(next, data.user.id);
+      return upsertMyProfile(next, user.id);
     },
-    onSuccess: async () => {
+    onSuccess: async (savedProfile) => {
       setSaveError(null);
-      await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      queryClient.setQueryData(profileQueryKey, savedProfile);
+      await queryClient.invalidateQueries({ queryKey: profileQueryKey });
       setEditing(false);
       toast.success("Profile saved", { description: "Your founder profile is up to date." });
     },

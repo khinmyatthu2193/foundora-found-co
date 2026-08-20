@@ -48,18 +48,22 @@ function LoginPage() {
     if (!passwordValid) return setError("Password must be at least 6 characters.");
     setError(null);
     setLoading(true);
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError || !data.user || !data.session) {
       setLoading(false);
-      setError(signInError.message);
+      setError(signInError?.message ?? "Login failed. Check your email and password.");
       return;
     }
     // Route based on whether a founder profile already exists.
     let hasProfile = false;
     try {
-      hasProfile = Boolean(await fetchMyProfile());
-    } catch {
-      hasProfile = false;
+      hasProfile = Boolean(await fetchMyProfile(data.user.id));
+    } catch (profileError) {
+      setLoading(false);
+      setError(
+        profileError instanceof Error ? profileError.message : "Could not load your profile.",
+      );
+      return;
     }
     setLoading(false);
     navigate({ to: hasProfile ? "/app" : "/app/profile" });

@@ -45,7 +45,7 @@ export function rowToForm(row: ProfileRow): FounderProfile {
   };
 }
 
-export function formToRow(form: FounderProfile, userId: string) {
+function formToRow(form: FounderProfile, userId: string) {
   return {
     id: userId,
     anonymous_name: form.anonName.trim(),
@@ -73,24 +73,35 @@ function describe(error: { message: string; code?: string; details?: string; hin
   return [error.message, extra].filter(Boolean).join(" — ");
 }
 
+async function requireCurrentUser(expectedUserId?: string) {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    throw new Error("Your session expired. Please log in again.");
+  }
+  if (expectedUserId && data.user.id !== expectedUserId) {
+    throw new Error("Your account changed. Please reload this page before continuing.");
+  }
+  return data.user;
+}
+
 /** Loads the signed-in user's own profile (RLS restricts this to the owner). */
-export async function fetchMyProfile(): Promise<ProfileRow | null> {
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return null;
+export async function fetchMyProfile(expectedUserId?: string): Promise<ProfileRow | null> {
+  const user = await requireCurrentUser(expectedUserId);
 
   const { data, error } = await supabase
     .from("profiles")
     .select(PROFILE_COLUMNS)
-    .eq("id", userData.user.id)
+    .eq("id", user.id)
     .maybeSingle();
   if (error) throw new Error(describe(error));
   return (data as ProfileRow | null) ?? null;
 }
 
-export async function upsertMyProfile(form: FounderProfile, userId: string) {
+export async function upsertMyProfile(form: FounderProfile, expectedUserId?: string) {
+  const user = await requireCurrentUser(expectedUserId);
   const { data, error } = await supabase
     .from("profiles")
-    .upsert(formToRow(form, userId), { onConflict: "id" })
+    .upsert(formToRow(form, user.id), { onConflict: "id" })
     .select(PROFILE_COLUMNS)
     .maybeSingle();
 
