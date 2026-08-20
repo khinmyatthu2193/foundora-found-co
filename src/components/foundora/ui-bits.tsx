@@ -1,6 +1,7 @@
 import { Lock, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/foundora-logo.png.asset.json";
 
 export function Tag({
   children,
