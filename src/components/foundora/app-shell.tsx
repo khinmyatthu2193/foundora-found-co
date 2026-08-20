@@ -1,11 +1,13 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Menu, LogOut } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
-import { Logo } from "@/components/foundora/ui-bits";
+import { FounderAvatar, Logo } from "@/components/foundora/ui-bits";
+import { fetchIncomingInterests } from "@/lib/matching";
+import { fetchMyProfile } from "@/lib/profile";
 import { signOutUser } from "@/lib/auth";
 import { clearFoundoraUserState } from "@/lib/foundora";
 
@@ -17,10 +19,23 @@ const NAV = [
   { to: "/app/workspace", label: "Workspace" },
 ] as const;
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, userId }: { children: ReactNode; userId: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const incoming = useQuery({
+    queryKey: ["incoming-interests", userId],
+    queryFn: fetchIncomingInterests,
+    refetchInterval: 30000,
+  });
+  const profile = useQuery({
+    queryKey: ["my-profile", userId],
+    queryFn: () => fetchMyProfile(userId),
+  });
+  const pendingCount = (incoming.data ?? []).filter(
+    (i) => !i.interest_sent && i.status === "pending",
+  ).length;
 
   const handleLogout = async () => {
     await queryClient.cancelQueries();
@@ -49,6 +64,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {n.label}
+                {n.to === "/app/matches" && pendingCount > 0 && (
+                  <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                    {pendingCount}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -56,6 +76,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="hidden items-center gap-1 md:flex">
             <ThemeSelector />
             <AppearanceToggle />
+            <Link to="/app/profile" aria-label="Your profile">
+              <FounderAvatar
+                size="sm"
+                path={profile.data?.avatar_url ?? null}
+                name={profile.data?.anonymous_name ?? "Founder"}
+              />
+            </Link>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="size-4" /> Logout
             </Button>
@@ -81,6 +108,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                       className="rounded-lg px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                     >
                       {n.label}
+                      {n.to === "/app/matches" && pendingCount > 0 && (
+                        <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                          {pendingCount}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>

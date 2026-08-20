@@ -1,17 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Pencil, RefreshCw, Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Camera, Pencil, Plus, RefreshCw, Save, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchMyProfile, rowToForm, upsertMyProfile } from "@/lib/profile";
+import {
+  emptyProfileForm,
+  fetchEmailVerified,
+  fetchMyProfile,
+  profileCompletion,
+  regenerateAnonymousName,
+  rowToForm,
+  suggestAnonymousName,
+  uploadAvatar,
+  upsertMyProfile,
+  validateProfileForm,
+} from "@/lib/profile";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { PrivacyBadge, PrivateField, Section, Tag } from "@/components/foundora/ui-bits";
+import {
+  FounderAvatar,
+  PrivacyBadge,
+  PrivateField,
+  Section,
+  Tag,
+  TrustBadges,
+} from "@/components/foundora/ui-bits";
 import {
   COMMITMENT_OPTIONS,
   EXPERIENCE_OPTIONS,
@@ -20,7 +39,6 @@ import {
   SKILL_OPTIONS,
   TRAIT_OPTIONS,
   WORKING_STYLE_OPTIONS,
-  
   type FounderProfile,
 } from "@/lib/foundora";
 import { cn } from "@/lib/utils";
@@ -32,7 +50,7 @@ export const Route = createFileRoute("/app/profile")({
       {
         name: "description",
         content:
-          "Create and edit your Foundora founder profile: skills, industries, commitment and working style.",
+          "Create and edit your Foundora founder profile: avatar, skills, industries, links and working style.",
       },
       { property: "og:title", content: "Founder profile — Foundora" },
       {
@@ -43,27 +61,6 @@ export const Route = createFileRoute("/app/profile")({
   }),
   component: ProfilePage,
 });
-
-function randomName() {
-  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  return `Founder #${letters[Math.floor(Math.random() * letters.length)]}${Math.floor(
-    10 + Math.random() * 89,
-  )}`;
-}
-
-const emptyProfile: FounderProfile = {
-  anonName: "Founder #A27",
-  realName: "",
-  skills: [],
-  buildIdea: "",
-  industries: [],
-  hoursPerWeek: 20,
-  experience: "Intermediate",
-  lookingFor: "Co-founder",
-  workingStyle: "Collaborative",
-  commitment: "Part-time",
-  traits: [],
-};
 
 function Chips({
   options,
@@ -108,6 +105,8 @@ function ProfilePage() {
   const queryClient = useQueryClient();
   const { user } = Route.useRouteContext();
   const profileQueryKey = ["my-profile", user.id] as const;
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
   const {
     data: profile,
     isLoading,
@@ -115,28 +114,37 @@ function ProfilePage() {
     refetch,
   } = useQuery({ queryKey: profileQueryKey, queryFn: () => fetchMyProfile(user.id) });
 
+  const emailVerified = useQuery({
+    queryKey: ["email-verified", user.id],
+    queryFn: fetchEmailVerified,
+  });
+
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<FounderProfile>(emptyProfile);
+  const [form, setForm] = useState<FounderProfile>(emptyProfileForm);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [customSkill, setCustomSkill] = useState("");
 
   useEffect(() => {
     if (profile) {
       setForm(rowToForm(profile));
       setEditing(false);
     } else if (profile === null) {
-      setForm(emptyProfile);
       setEditing(true);
+      setForm((f) => (f.anonName ? f : emptyProfileForm));
+      // new founders get a friendly, unique name automatically
+      suggestAnonymousName()
+        .then((name) => setForm((f) => (f.anonName ? f : { ...f, anonName: name })))
+        .catch(() => undefined);
     }
   }, [profile]);
 
   const saveMutation = useMutation({
-    mutationFn: async (next: FounderProfile) => {
-      return upsertMyProfile(next, user.id);
-    },
+    mutationFn: async (next: FounderProfile) => upsertMyProfile(next, user.id),
     onSuccess: async (savedProfile) => {
       setSaveError(null);
       queryClient.setQueryData(profileQueryKey, savedProfile);
       await queryClient.invalidateQueries({ queryKey: profileQueryKey });
+      void queryClient.invalidateQueries({ queryKey: ["discovery", user.id] });
       setEditing(false);
       toast.success("Profile saved", { description: "Your founder profile is up to date." });
     },
@@ -147,16 +155,56 @@ function ProfilePage() {
     },
   });
 
+  const nameMutation = useMutation({
+    mutationFn: async () => (profile ? regenerateAnonymousName() : suggestAnonymousName()),
+    onSuccess: (name) => {
+      setForm((f) => ({ ...f, anonName: name }));
+      if (profile) {
+        void queryClient.invalidateQueries({ queryKey: profileQueryKey });
+        void queryClient.invalidateQueries({ queryKey: ["discovery", user.id] });
+      }
+      toast.success(`Your new anonymous name is ${name}`);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not generate a name."),
+  });
+
+  const avatarMutation = useMutation({
+    mutationFn: (file: File) => uploadAvatar(file, user.id),
+    onSuccess: (path) => {
+      setForm((f) => ({ ...f, avatarPath: path }));
+      toast.success("Photo uploaded", { description: "Save your profile to keep it." });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Upload failed."),
+  });
+
   const set = <K extends keyof FounderProfile>(k: K, v: FounderProfile[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const save = () => {
-    if (!form.anonName.trim()) {
-      setSaveError("Add an anonymous founder name before saving.");
+  const addCustomSkill = () => {
+    const s = customSkill.trim();
+    if (!s) return;
+    if (form.skills.some((x) => x.toLowerCase() === s.toLowerCase())) {
+      toast.message("You already added that skill.");
+      setCustomSkill("");
       return;
     }
+    set("skills", [...form.skills, s]);
+    setCustomSkill("");
+  };
+
+  const save = () => {
+    const problem = validateProfileForm(form);
+    if (problem) {
+      setSaveError(problem);
+      toast.error(problem);
+      return;
+    }
+    setSaveError(null);
     saveMutation.mutate(form);
   };
+
+  const verified = emailVerified.data ?? false;
+  const completion = profileCompletion(profile ? rowToForm(profile) : form, verified);
 
   if (isLoading) {
     return (
@@ -189,16 +237,33 @@ function ProfilePage() {
     );
   }
 
+  const trustFlags = {
+    email_verified: verified,
+    has_linkedin: Boolean(form.linkedinUrl),
+    has_github: Boolean(form.githubUrl),
+    has_portfolio: Boolean(form.portfolioUrl || form.websiteUrl),
+  };
+
   if (!editing && profile) {
     const p = rowToForm(profile);
 
     return (
-      <Section className="pt-8" title="Your founder profile" description="This is how you appear to other founders — anonymously.">
+      <Section
+        className="pt-8"
+        title="Your founder profile"
+        description="This is how you appear to other founders — anonymously."
+      >
         <div className="grid gap-4 lg:grid-cols-3">
           <Card className="border-border shadow-soft lg:col-span-2">
             <CardContent className="space-y-6 p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-xl font-semibold">{p.anonName}</h3>
+                <div className="flex items-center gap-4">
+                  <FounderAvatar size="lg" path={p.avatarPath} name={p.anonName} />
+                  <div>
+                    <h3 className="text-xl font-semibold">{p.anonName}</h3>
+                    <TrustBadges className="mt-2" flags={trustFlags} />
+                  </div>
+                </div>
                 <PrivacyBadge />
               </div>
 
@@ -250,6 +315,32 @@ function ProfilePage() {
                 </div>
               </Field>
 
+              <Field label="Professional links">
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {[
+                    ["LinkedIn", p.linkedinUrl],
+                    ["GitHub", p.githubUrl],
+                    ["Portfolio", p.portfolioUrl],
+                    ["Website", p.websiteUrl],
+                  ]
+                    .filter(([, url]) => Boolean(url))
+                    .map(([label, url]) => (
+                      <a
+                        key={label}
+                        href={url as string}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        {label}
+                      </a>
+                    ))}
+                  {!p.linkedinUrl && !p.githubUrl && !p.portfolioUrl && !p.websiteUrl && (
+                    <span className="text-muted-foreground">No links added yet</span>
+                  )}
+                </div>
+              </Field>
+
               <div className="flex flex-wrap gap-3 pt-2">
                 <Button onClick={() => setEditing(true)} variant="outline">
                   <Pencil className="size-4" /> Edit profile
@@ -261,25 +352,31 @@ function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-border shadow-soft">
-            <CardContent className="space-y-5 p-6">
-              <h3 className="font-semibold">Private information</h3>
-              <div>
-                <PrivateField>Private</PrivateField>
-                <p className="mt-2 text-sm font-medium">{p.realName || "Not provided"}</p>
-                <p className="text-xs text-muted-foreground">
-                  Kept private until both founders agree to reveal identities.
-                </p>
-              </div>
-              <div>
-                <PrivateField>Private</PrivateField>
-                <p className="mt-2 text-sm whitespace-pre-wrap">
-                  {p.buildIdea || "No idea shared yet."}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">Your startup idea stays private.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <CompletionCard score={completion.score} nextStep={completion.nextStep} />
+
+            <Card className="border-border shadow-soft">
+              <CardContent className="space-y-5 p-6">
+                <h3 className="font-semibold">Private information</h3>
+                <div>
+                  <PrivateField>Private</PrivateField>
+                  <p className="mt-2 text-sm font-medium">{p.realName || "Not provided"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Kept private until both founders agree to reveal identities.
+                  </p>
+                </div>
+                <div>
+                  <PrivateField>Private</PrivateField>
+                  <p className="mt-2 text-sm whitespace-pre-wrap">
+                    {p.buildIdea || "No idea shared yet."}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Your startup idea stays private.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </Section>
     );
@@ -294,19 +391,61 @@ function ProfilePage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="border-border shadow-soft lg:col-span-2">
           <CardContent className="space-y-7 p-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <FounderAvatar size="lg" path={form.avatarPath} name={form.anonName || "Founder"} />
+              <div className="space-y-2">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) avatarMutation.mutate(file);
+                    e.target.value = "";
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={avatarMutation.isPending}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <Camera className="size-4" />
+                  {avatarMutation.isPending
+                    ? "Uploading…"
+                    : form.avatarPath
+                      ? "Replace photo"
+                      : "Upload photo"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Optional. PNG, JPG or WebP up to 3 MB.
+                </p>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="anon">Anonymous founder name</Label>
               <div className="flex gap-2">
                 <Input
                   id="anon"
                   value={form.anonName}
-                  onChange={(e) => set("anonName", e.target.value)}
-                  placeholder="Founder #A27"
+                  readOnly
+                  placeholder="Generating…"
+                  className="max-w-xs"
                 />
-                <Button type="button" variant="outline" onClick={() => set("anonName", randomName())}>
-                  <RefreshCw className="size-4" /> Generate name
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={nameMutation.isPending}
+                  onClick={() => nameMutation.mutate()}
+                >
+                  <RefreshCw className="size-4" /> Generate another name
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Friendly and unique — it never reveals your real identity.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -325,9 +464,47 @@ function ProfilePage() {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>Skills / what you can do</Label>
               <Chips options={SKILL_OPTIONS} value={form.skills} onChange={(v) => set("skills", v)} />
+              {form.skills.filter((s) => !SKILL_OPTIONS.includes(s)).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {form.skills
+                    .filter((s) => !SKILL_OPTIONS.includes(s))
+                    .map((s) => (
+                      <span
+                        key={s}
+                        className="inline-flex items-center gap-1 rounded-full border border-primary bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
+                      >
+                        {s}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${s}`}
+                          onClick={() => set("skills", form.skills.filter((x) => x !== s))}
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  value={customSkill}
+                  onChange={(e) => setCustomSkill(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCustomSkill();
+                    }
+                  }}
+                  placeholder="AI Automation, Sales Strategy, No-code…"
+                  className="max-w-xs"
+                />
+                <Button type="button" variant="outline" onClick={addCustomSkill}>
+                  <Plus className="size-4" /> Add custom skill
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -410,6 +587,45 @@ function ProfilePage() {
               <Chips options={TRAIT_OPTIONS} value={form.traits} onChange={(v) => set("traits", v)} />
             </div>
 
+            <div className="space-y-3 border-t border-border pt-5">
+              <div>
+                <Label>Professional links</Label>
+                <p className="text-xs text-muted-foreground">
+                  All optional — they add trust badges without revealing your identity in discovery.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <LinkInput
+                  id="linkedin"
+                  label="LinkedIn"
+                  value={form.linkedinUrl}
+                  onChange={(v) => set("linkedinUrl", v)}
+                  placeholder="linkedin.com/in/you"
+                />
+                <LinkInput
+                  id="github"
+                  label="GitHub"
+                  value={form.githubUrl}
+                  onChange={(v) => set("githubUrl", v)}
+                  placeholder="github.com/you"
+                />
+                <LinkInput
+                  id="portfolio"
+                  label="Portfolio"
+                  value={form.portfolioUrl}
+                  onChange={(v) => set("portfolioUrl", v)}
+                  placeholder="dribbble.com/you"
+                />
+                <LinkInput
+                  id="website"
+                  label="Personal website"
+                  value={form.websiteUrl}
+                  onChange={(v) => set("websiteUrl", v)}
+                  placeholder="you.com"
+                />
+              </div>
+            </div>
+
             {saveError && (
               <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 {saveError}
@@ -432,26 +648,77 @@ function ProfilePage() {
                 </Button>
               )}
             </div>
-
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-border shadow-soft">
-          <CardContent className="space-y-4 p-6">
-            <PrivacyBadge label="Privacy in Foundora" />
-            <p className="text-sm text-muted-foreground">
-              Other founders only see your anonymous name, skills, industries, availability and
-              working preferences.
-            </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Real name — hidden until mutual reveal</li>
-              <li>• Startup idea — never shown in discovery</li>
-              <li>• Email — never shown to anyone</li>
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <CompletionCard
+            score={profileCompletion(form, verified).score}
+            nextStep={profileCompletion(form, verified).nextStep}
+          />
+          <Card className="h-fit border-border shadow-soft">
+            <CardContent className="space-y-4 p-6">
+              <PrivacyBadge label="Privacy in Foundora" />
+              <TrustBadges flags={trustFlags} />
+              <p className="text-sm text-muted-foreground">
+                Other founders only see your anonymous name, avatar, skills, industries,
+                availability, working preferences and trust badges.
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Real name — hidden until mutual reveal</li>
+                <li>• Startup idea — never shown in discovery</li>
+                <li>• Email — never shown to anyone</li>
+                <li>• Links — only shown as badges, never as URLs</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Section>
+  );
+}
+
+function CompletionCard({ score, nextStep }: { score: number; nextStep: string | null }) {
+  return (
+    <Card className="border-border shadow-soft">
+      <CardContent className="space-y-3 p-6">
+        <div className="flex items-baseline justify-between">
+          <h3 className="font-semibold">Profile strength</h3>
+          <span className="text-2xl font-semibold text-primary">{score}%</span>
+        </div>
+        <Progress value={score} />
+        <p className="text-sm text-muted-foreground">
+          {nextStep ?? "Your profile is complete. Founders can see everything they need."}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LinkInput({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        inputMode="url"
+      />
+    </div>
   );
 }
 

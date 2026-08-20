@@ -5,7 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EmptyState, PrivacyBadge, Section, Tag } from "@/components/foundora/ui-bits";
+import {
+  EmptyState,
+  FounderAvatar,
+  PrivacyBadge,
+  Section,
+  Tag,
+} from "@/components/foundora/ui-bits";
 import { fetchMatchHeader, fetchMessages, sendMessage } from "@/lib/matching";
 import { cn } from "@/lib/utils";
 
@@ -89,9 +95,12 @@ function ChatPage() {
     <Section className="pt-8">
       <div className="rounded-2xl border border-border bg-card p-5 shadow-soft md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold md:text-2xl">{other.anonymous_name}</h1>
-            <p className="text-sm text-muted-foreground">Anonymous conversation</p>
+          <div className="flex items-center gap-3">
+            <FounderAvatar path={other.avatar_url} name={other.anonymous_name} />
+            <div>
+              <h1 className="text-xl font-semibold md:text-2xl">{other.anonymous_name}</h1>
+              <p className="text-sm text-muted-foreground">Anonymous conversation</p>
+            </div>
           </div>
           <PrivacyBadge />
         </div>

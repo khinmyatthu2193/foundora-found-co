@@ -16,6 +16,11 @@ export type FounderProfile = {
   workingStyle: string;
   commitment: string;
   traits: string[];
+  avatarPath: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  portfolioUrl: string;
+  websiteUrl: string;
 };
 
 export type MockFounder = {
