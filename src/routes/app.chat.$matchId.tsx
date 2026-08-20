@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BuildDecisionCard } from "@/components/foundora/build-decision-card";
 import { CompatibilityCard } from "@/components/foundora/compatibility-card";
 import { GuidedConversation } from "@/components/foundora/guided-conversation";
 import { ProjectDirectionCard } from "@/components/foundora/project-direction-card";
@@ -149,6 +150,13 @@ function ChatPage() {
         userId={user.id}
         matchId={matchId}
         premium={plan.data === "premium"}
+      />
+
+      <BuildDecisionCard
+        className="mt-4"
+        userId={user.id}
+        matchId={matchId}
+        partnerName={other.anonymous_name}
       />
 
       <ProjectDirectionCard className="mt-4" userId={user.id} matchId={matchId} />
