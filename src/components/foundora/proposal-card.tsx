@@ -84,7 +84,7 @@ export function ProposalCard({
   });
 
   const data = proposal.data?.proposal_json;
-  const ready = directionIsReady(direction.data);
+  const ready = readyOverride ?? directionIsReady(direction.data);
 
   return (
     <div
@@ -116,7 +116,7 @@ export function ProposalCard({
               ? "Founder Pro required to generate AI proposal"
               : ready
                 ? "Turn your shared direction into a concise startup proposal."
-                : "Complete project direction before generating proposal."}
+                : (notReadyText ?? "Complete project direction before generating proposal.")}
           </p>
           {premium ? (
             <Button
