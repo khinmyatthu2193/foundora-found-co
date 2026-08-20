@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      interests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          match_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          match_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           anonymous_name: string
@@ -80,9 +160,53 @@ export type Database = {
           discovery_id: string
           experience_level: string
           industry_interests: string[]
+          interest_sent: boolean
+          is_matched: boolean
           looking_for: string
           skills: string[]
           working_style: string
+        }[]
+      }
+      incoming_interests: {
+        Args: never
+        Returns: {
+          anonymous_name: string
+          created_at: string
+          discovery_id: string
+          industry_interests: string[]
+          interest_sent: boolean
+          skills: string[]
+        }[]
+      }
+      is_match_member: {
+        Args: { _match_id: string; _user_id: string }
+        Returns: boolean
+      }
+      match_header: {
+        Args: { p_match_id: string }
+        Returns: {
+          anonymous_name: string
+          commitment_level: string
+          match_id: string
+          skills: string[]
+        }[]
+      }
+      my_matches: {
+        Args: never
+        Returns: {
+          anonymous_name: string
+          available_hours: number
+          commitment_level: string
+          created_at: string
+          industry_interests: string[]
+          match_id: string
+          skills: string[]
+        }[]
+      }
+      send_interest: {
+        Args: { p_discovery_id: string }
+        Returns: {
+          matched: boolean
         }[]
       }
     }
