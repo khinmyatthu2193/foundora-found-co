@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyProgress, Section, Tag } from "@/components/foundora/ui-bits";
-import { useSession } from "@/lib/auth";
 import { useFoundora } from "@/lib/foundora";
 import { fetchMyProfile } from "@/lib/profile";
 
