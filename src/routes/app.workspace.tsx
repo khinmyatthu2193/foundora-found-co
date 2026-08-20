@@ -36,7 +36,7 @@ const DEFAULT_TASKS = [
 
 function Workspace() {
   const { state, getMatch } = useFoundora();
-  const activeId = state.matches.find((id) => {
+  const activeId = Object.keys(state.matchState).find((id) => {
     const m = getMatch(id);
     return m.acceptMe && m.acceptThem;
   });
