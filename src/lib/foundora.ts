@@ -279,6 +279,10 @@ function emit() {
 }
 
 export function setState(updater: (s: FoundoraState) => FoundoraState) {
+  if (!hydrated && typeof window !== "undefined") {
+    state = load();
+    hydrated = true;
+  }
   state = updater(state);
   persist();
   emit();
