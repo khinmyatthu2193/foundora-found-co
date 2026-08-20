@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo, PrivacyBadge } from "@/components/foundora/ui-bits";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
 
 
 export const Route = createFileRoute("/signup")({
@@ -61,7 +62,7 @@ function SignUp() {
     });
     setLoading(false);
     if (signUpError) {
-      setError(signUpError.message);
+      setError(friendlyAuthError(signUpError, "We couldn't create your account. Please try again."));
       return;
     }
     if (!data.user) {
