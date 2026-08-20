@@ -4,8 +4,15 @@ import { Heart, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState, PrivacyBadge, Section, Tag } from "@/components/foundora/ui-bits";
-import { fetchIncomingInterests, fetchMyMatches, sendInterest } from "@/lib/matching";
+import {
+  EmptyState,
+  FounderAvatar,
+  PrivacyBadge,
+  Section,
+  Tag,
+  TrustBadges,
+} from "@/components/foundora/ui-bits";
+import { fetchIncomingInterests, fetchMyMatches, respondToInterest } from "@/lib/matching";
 
 export const Route = createFileRoute("/app/matches")({
   head: () => ({
@@ -38,12 +45,15 @@ function MatchesPage() {
     queryFn: fetchIncomingInterests,
   });
 
-  const interestBack = useMutation({
-    mutationFn: (discoveryId: string) => sendInterest(discoveryId),
-    onSuccess: (res) => {
-      toast[res.matched ? "success" : "message"](
-        res.matched ? "It's a match! 🎉" : "Interest sent",
-      );
+  const respond = useMutation({
+    mutationFn: (vars: { discoveryId: string; accept: boolean }) =>
+      respondToInterest(vars.discoveryId, vars.accept),
+    onSuccess: (res, vars) => {
+      if (!vars.accept) toast.message("Interest declined");
+      else
+        toast[res.matched ? "success" : "message"](
+          res.matched ? "It's a match! 🎉" : "Interest accepted",
+        );
       void queryClient.invalidateQueries({ queryKey: ["matches", user.id] });
       void queryClient.invalidateQueries({ queryKey: ["incoming-interests", user.id] });
       void queryClient.invalidateQueries({ queryKey: ["discovery", user.id] });
@@ -51,7 +61,7 @@ function MatchesPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not send interest."),
   });
 
-  const pending = (incoming.data ?? []).filter((i) => !i.interest_sent);
+  const pending = (incoming.data ?? []).filter((i) => !i.interest_sent && i.status === "pending");
 
   return (
     <Section
@@ -73,10 +83,14 @@ function MatchesPage() {
             {pending.map((i) => (
               <Card key={i.discovery_id} className="border-border shadow-soft">
                 <CardContent className="space-y-4 p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-lg font-semibold">{i.anonymous_name}</h3>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <FounderAvatar path={i.avatar_url} name={i.anonymous_name} />
+                      <h3 className="text-lg font-semibold">{i.anonymous_name}</h3>
+                    </div>
                     <PrivacyBadge />
                   </div>
+                  <TrustBadges flags={i} />
                   <div className="flex flex-wrap gap-2">
                     {i.skills.slice(0, 4).map((s) => (
                       <Tag key={s} tone="primary">
@@ -85,15 +99,25 @@ function MatchesPage() {
                     ))}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    This founder is interested in building with you.
+                    {i.anonymous_name} is interested in building with you.
                   </p>
-                  <Button
-                    className="w-full"
-                    disabled={interestBack.isPending}
-                    onClick={() => interestBack.mutate(i.discovery_id)}
-                  >
-                    Interested back
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      disabled={respond.isPending}
+                      onClick={() => respond.mutate({ discoveryId: i.discovery_id, accept: false })}
+                    >
+                      Decline
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      disabled={respond.isPending}
+                      onClick={() => respond.mutate({ discoveryId: i.discovery_id, accept: true })}
+                    >
+                      Accept
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -130,10 +154,14 @@ function MatchesPage() {
               className="border-border shadow-soft transition-shadow hover:shadow-card"
             >
               <CardContent className="space-y-4 p-6">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-lg font-semibold">{m.anonymous_name}</h3>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <FounderAvatar path={m.avatar_url} name={m.anonymous_name} />
+                    <h3 className="text-lg font-semibold">{m.anonymous_name}</h3>
+                  </div>
                   <PrivacyBadge />
                 </div>
+                <TrustBadges flags={m} />
                 <div className="flex flex-wrap gap-2">
                   {m.skills.slice(0, 3).map((s) => (
                     <Tag key={s} tone="primary">

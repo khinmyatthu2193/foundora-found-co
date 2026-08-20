@@ -1,20 +1,32 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type MatchSummary = {
+export type TrustFlags = {
+  has_linkedin: boolean;
+  has_github: boolean;
+  has_portfolio: boolean;
+  email_verified: boolean;
+};
+
+export type MatchSummary = TrustFlags & {
   match_id: string;
   created_at: string;
   anonymous_name: string;
+  avatar_url: string | null;
   skills: string[];
   industry_interests: string[];
   commitment_level: string | null;
   available_hours: number;
 };
 
-export type IncomingInterest = {
+export type IncomingInterest = TrustFlags & {
   discovery_id: string;
   anonymous_name: string;
+  avatar_url: string | null;
   skills: string[];
   industry_interests: string[];
+  experience_level: string | null;
+  available_hours: number;
+  status: string;
   created_at: string;
   interest_sent: boolean;
 };
@@ -22,6 +34,7 @@ export type IncomingInterest = {
 export type MatchHeader = {
   match_id: string;
   anonymous_name: string;
+  avatar_url: string | null;
   skills: string[];
   commitment_level: string | null;
 };
@@ -45,6 +58,21 @@ export async function sendInterest(discoveryId: string): Promise<{ matched: bool
   await requireUserId();
   const { data, error } = await supabase.rpc("send_interest", { p_discovery_id: discoveryId });
   if (error) throw new Error("Could not send your interest. Please try again.");
+  const row = (data as { matched: boolean }[] | null)?.[0];
+  return { matched: Boolean(row?.matched) };
+}
+
+/** Accepts (creating the mutual match) or declines an interest you received. */
+export async function respondToInterest(
+  discoveryId: string,
+  accept: boolean,
+): Promise<{ matched: boolean }> {
+  await requireUserId();
+  const { data, error } = await supabase.rpc("respond_to_interest", {
+    p_discovery_id: discoveryId,
+    p_accept: accept,
+  });
+  if (error) throw new Error("Could not update this interest. Please try again.");
   const row = (data as { matched: boolean }[] | null)?.[0];
   return { matched: Boolean(row?.matched) };
 }
