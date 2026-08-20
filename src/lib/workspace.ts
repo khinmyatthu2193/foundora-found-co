@@ -95,9 +95,19 @@ export async function setCollaborationDecision(
     p_match_id: matchId,
     p_accept: accept,
   });
-  if (error) throw new Error("Could not save your decision. Please try again.");
+  if (error) {
+    const msg = error.message ?? "";
+    if (msg.includes("not part of this match")) {
+      throw new Error("You are not part of this match.");
+    }
+    if (msg.includes("Not authenticated")) {
+      throw new Error("Your session expired. Please log in again.");
+    }
+    throw new Error(`Could not save your decision. ${msg}`.trim());
+  }
   return ((data as CollaborationState[] | null) ?? [])[0] ?? null;
 }
+
 
 export async function fetchMyWorkspaces(): Promise<WorkspaceSummary[]> {
   const { data, error } = await supabase.rpc("my_workspaces");

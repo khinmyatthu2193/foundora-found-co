@@ -35,7 +35,9 @@ export function BuildDecisionCard({
     mutationFn: (accept: boolean) => setCollaborationDecision(matchId, accept),
     onSuccess: (row, accept) => {
       queryClient.setQueryData(collaborationQueryKey(userId, matchId), row);
+      void state.refetch();
       void queryClient.invalidateQueries({ queryKey: workspaceListQueryKey(userId) });
+
       if (row?.status === "building_together") {
         toast.success("You're building together — your workspace is ready");
       } else if (accept) {
