@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -10,7 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyProgress, Section, Tag } from "@/components/foundora/ui-bits";
+import { useSession } from "@/lib/auth";
 import { useFoundora } from "@/lib/foundora";
+import { fetchMyProfile } from "@/lib/profile";
+
 
 export const Route = createFileRoute("/app/")({
   head: () => ({
@@ -32,11 +36,14 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { state } = useFoundora();
-  const hasProfile = Boolean(state.profile);
+  const { user } = useSession();
+  const { data: profile } = useQuery({ queryKey: ["my-profile"], queryFn: fetchMyProfile });
+  const hasProfile = Boolean(profile);
   const matchCount = state.matches.length;
   const workspaceReady = Object.values(state.matchState).some((m) => m.acceptMe && m.acceptThem);
 
   const step = workspaceReady ? 3 : matchCount > 0 ? 2 : hasProfile ? 1 : 0;
+
 
   const actions = [
     {
@@ -85,7 +92,7 @@ function Dashboard() {
     <Section className="pt-8">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft md:p-8">
         <p className="text-sm text-muted-foreground">
-          {state.auth?.email ? `Signed in as ${state.auth.email}` : "Welcome to Foundora"}
+          {user?.email ? `Signed in as ${user.email}` : "Welcome to Foundora"}
         </p>
         <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
           Ready to find your next collaborator?

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Menu, LogOut } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { Logo } from "@/components/foundora/ui-bits";
-import { useFoundora } from "@/lib/foundora";
+import { signOutUser } from "@/lib/auth";
 
 const NAV = [
   { to: "/app", label: "Home" },
@@ -17,13 +18,16 @@ const NAV = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const { logout } = useFoundora();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    logout();
-    navigate({ to: "/" });
+  const handleLogout = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await signOutUser();
+    navigate({ to: "/", replace: true });
   };
+
 
   return (
     <div className="min-h-screen bg-background">

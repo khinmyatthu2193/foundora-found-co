@@ -6,7 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/foundora/ui-bits";
-import { useFoundora } from "@/lib/foundora";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchMyProfile } from "@/lib/profile";
+
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -28,7 +30,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useFoundora();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -40,18 +41,30 @@ function LoginPage() {
   const passwordValid = password.length >= 6;
   const canSubmit = emailValid && passwordValid && !loading;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
     if (!emailValid) return setError("Enter a valid email address.");
     if (!passwordValid) return setError("Password must be at least 6 characters.");
     setError(null);
     setLoading(true);
-    setTimeout(() => {
-      login(email);
-      navigate({ to: "/app" });
-    }, 700);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      setLoading(false);
+      setError(signInError.message);
+      return;
+    }
+    // Route based on whether a founder profile already exists.
+    let hasProfile = false;
+    try {
+      hasProfile = Boolean(await fetchMyProfile());
+    } catch {
+      hasProfile = false;
+    }
+    setLoading(false);
+    navigate({ to: hasProfile ? "/app" : "/app/profile" });
   };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo, PrivacyBadge } from "@/components/foundora/ui-bits";
-import { useFoundora } from "@/lib/foundora";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -29,7 +30,6 @@ export const Route = createFileRoute("/signup")({
 
 function SignUp() {
   const navigate = useNavigate();
-  const { login } = useFoundora();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -37,6 +37,7 @@ function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const emailValid = /^\S+@\S+\.\S+$/.test(email);
@@ -44,19 +45,33 @@ function SignUp() {
   const matches = confirm.length > 0 && password === confirm;
   const canSubmit = emailValid && passwordValid && matches && !loading;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
     if (!emailValid) return setError("Enter a valid email address.");
     if (!passwordValid) return setError("Password must be at least 6 characters.");
     if (!matches) return setError("Passwords do not match.");
     setError(null);
+    setNotice(null);
     setLoading(true);
-    setTimeout(() => {
-      login(email);
-      navigate({ to: "/app/profile" });
-    }, 700);
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setLoading(false);
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+    if (!data.session) {
+      setNotice("Check your email to confirm your account, then log in to create your profile.");
+      return;
+    }
+    // New account: always head to founder profile creation.
+    navigate({ to: "/app/profile" });
   };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -161,6 +176,11 @@ function SignUp() {
                   {error}
                 </p>
               )}
+
+              {notice && (
+                <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</p>
+              )}
+
 
               <Button type="submit" className="w-full" size="lg" disabled={!canSubmit}>
                 {loading && <Loader2 className="size-4 animate-spin" />}

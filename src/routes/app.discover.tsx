@@ -1,10 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Compass, PartyPopper } from "lucide-react";
-import { toast } from "sonner";
+import { Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState, PrivacyBadge, Section, Tag } from "@/components/foundora/ui-bits";
-import { MOCK_FOUNDERS, useFoundora } from "@/lib/foundora";
+import { fetchDiscoveryFounders } from "@/lib/profile";
 
 export const Route = createFileRoute("/app/discover")({
   head: () => ({
@@ -26,27 +26,12 @@ export const Route = createFileRoute("/app/discover")({
 });
 
 function DiscoverPage() {
-  const { state, pass, interested } = useFoundora();
-
-  const remaining = MOCK_FOUNDERS.filter(
-    (f) => !state.passed.includes(f.id) && !state.interested.includes(f.id),
-  );
-
-  const handleInterested = (id: string) => {
-    const f = MOCK_FOUNDERS.find((x) => x.id === id)!;
-    interested(id);
-    if (f.instantMatch) {
-      toast.success("It's a match!", {
-        description: `${f.anonName} was already interested in you. You can start chatting.`,
-        icon: <PartyPopper className="size-4" />,
-      });
-    } else {
-      toast("Interest sent", {
-        description: "You'll be matched if they're interested too.",
-        icon: <Check className="size-4" />,
-      });
-    }
-  };
+  const {
+    data: founders,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({ queryKey: ["discovery"], queryFn: fetchDiscoveryFounders });
 
   return (
     <Section
@@ -59,30 +44,58 @@ function DiscoverPage() {
         </Button>
       }
     >
-      {remaining.length === 0 ? (
+      {isLoading && (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Card key={i} className="border-border shadow-soft">
+              <CardContent className="space-y-3 p-6">
+                <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+                <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                <div className="h-20 w-full animate-pulse rounded bg-muted" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!isLoading && error && (
+        <Card className="border-border shadow-soft">
+          <CardContent className="space-y-4 p-6">
+            <p className="text-sm text-destructive">
+              {error instanceof Error ? error.message : "Could not load founders."}
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && !error && (founders?.length ?? 0) === 0 && (
         <EmptyState
           icon={<Compass className="size-8" />}
-          title="You've reviewed everyone for now"
-          description="New founders join Foundora regularly. Check your matches in the meantime."
+          title="No other founders yet"
+          description="You're early. As more founders complete their profiles, they'll appear here anonymously."
           action={
             <Button asChild>
-              <Link to="/app/matches">Go to matches</Link>
+              <Link to="/app/profile">Review your profile</Link>
             </Button>
           }
         />
-      ) : (
+      )}
+
+      {!isLoading && !error && (founders?.length ?? 0) > 0 && (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {remaining.map((f) => (
+          {founders!.map((f) => (
             <Card
-              key={f.id}
+              key={f.discovery_id}
               className="flex flex-col border-border shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card"
             >
               <CardContent className="flex flex-1 flex-col gap-4 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-lg font-semibold">{f.anonName}</h3>
+                  <h3 className="text-lg font-semibold">{f.anonymous_name}</h3>
                   <PrivacyBadge />
                 </div>
-                <p className="text-sm text-muted-foreground">{f.blurb}</p>
 
                 <div>
                   <Label>Skills</Label>
@@ -98,24 +111,24 @@ function DiscoverPage() {
                 <div>
                   <Label>Industries</Label>
                   <div className="mt-1.5 flex flex-wrap gap-2">
-                    {f.industries.map((s) => (
+                    {f.industry_interests.map((s) => (
                       <Tag key={s}>{s}</Tag>
                     ))}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <Meta label="Available" value={`${f.hours} hrs/week`} />
-                  <Meta label="Experience" value={f.experience} />
-                  <Meta label="Looking for" value={f.lookingFor} />
-                  <Meta label="Working style" value={f.workingStyle} />
-                  <Meta label="Commitment" value={f.commitment} />
+                  <Meta label="Available" value={`${f.available_hours} hrs/week`} />
+                  <Meta label="Experience" value={f.experience_level ?? "—"} />
+                  <Meta label="Looking for" value={f.looking_for ?? "—"} />
+                  <Meta label="Working style" value={f.working_style ?? "—"} />
+                  <Meta label="Commitment" value={f.commitment_level ?? "—"} />
                 </div>
 
                 <div>
                   <Label>Wants a partner who is</Label>
                   <div className="mt-1.5 flex flex-wrap gap-2">
-                    {f.traits.map((s) => (
+                    {f.desired_partner_traits.map((s) => (
                       <Tag key={s} tone="muted">
                         {s}
                       </Tag>
@@ -123,23 +136,13 @@ function DiscoverPage() {
                   </div>
                 </div>
 
-                <div className="mt-auto grid grid-cols-2 gap-3 pt-2">
-                  <Button variant="outline" onClick={() => pass(f.id)}>
-                    Pass
-                  </Button>
-                  <Button onClick={() => handleInterested(f.id)}>Interested</Button>
-                </div>
+                <p className="mt-auto pt-2 text-xs text-muted-foreground">
+                  Identities and startup ideas stay private. Matching arrives in the next phase.
+                </p>
               </CardContent>
             </Card>
           ))}
         </div>
-      )}
-
-      {state.interested.length > 0 && (
-        <p className="mt-6 text-sm text-muted-foreground">
-          Interest sent to {state.interested.length} founder
-          {state.interested.length > 1 ? "s" : ""}. Matches appear once they're interested too.
-        </p>
       )}
     </Section>
   );
