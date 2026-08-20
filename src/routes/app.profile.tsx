@@ -392,6 +392,8 @@ function ProfilePage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="border-border shadow-soft lg:col-span-2">
           <CardContent className="space-y-7 p-6">
+            <FormSection title="Identity" description="Your anonymous presence — and the private details only you can see." />
+
             <div className="flex flex-wrap items-center gap-4">
               <FounderAvatar size="lg" path={form.avatarPath} name={form.anonName || "Founder"} />
               <div className="space-y-2">
@@ -465,7 +467,8 @@ function ProfilePage() {
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 border-t border-border pt-6">
+              <FormSection title="Skills" description="What you bring to a founding team." />
               <Label>Skills / what you can do</Label>
               <Chips options={SKILL_OPTIONS} value={form.skills} onChange={(v) => set("skills", v)} />
               {form.skills.filter((s) => !SKILL_OPTIONS.includes(s)).length > 0 && (
@@ -532,7 +535,11 @@ function ProfilePage() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 border-t border-border pt-6">
+              <FormSection
+                title="Founder preferences"
+                description="How you like to work and what you want in a partner."
+              />
               <Label>How much time can you commit?</Label>
               <Chips
                 multi={false}
@@ -596,7 +603,11 @@ function ProfilePage() {
               <p className="text-xs text-muted-foreground">Choose as many as apply.</p>
             </div>
 
-            <div className="space-y-3 border-t border-border pt-5">
+            <div className="space-y-3 border-t border-border pt-6">
+              <FormSection
+                title="Trust & verification"
+                description="Optional links that earn trust badges — never shown as URLs in discovery."
+              />
               <div>
                 <Label>Professional links</Label>
                 <p className="text-xs text-muted-foreground">
@@ -738,6 +749,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </p>
       {children}
+    </div>
+  );
+}
+
+function FormSection({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="space-y-1">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">{title}</h3>
+      <p className="text-xs text-muted-foreground">{description}</p>
     </div>
   );
 }
