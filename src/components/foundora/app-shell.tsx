@@ -96,11 +96,8 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
                 className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {n.label}
-                {n.to === "/app/matches" && pendingCount > 0 && (
-                  <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
-                    {pendingCount}
-                  </span>
-                )}
+                <Badge count={badgeFor(n.to)} />
+
               </Link>
             ))}
           </nav>
