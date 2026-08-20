@@ -35,15 +35,56 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
       .eq("match_id", data.matchId)
       .maybeSingle();
 
-    if (
-      !direction ||
-      !direction.project_title?.trim() ||
-      !direction.problem?.trim() ||
-      !direction.target_users?.trim() ||
-      !direction.solution?.trim()
-    ) {
-      throw new Error("Complete project direction before generating proposal.");
+    // Prefer the shared workspace once the founders decided to build together.
+    const { data: collab } = await supabase
+      .from("founder_collaborations")
+      .select("id")
+      .eq("match_id", data.matchId)
+      .maybeSingle();
+
+    let workspace: {
+      project_name: string;
+      problem: string;
+      target_users: string;
+      solution: string;
+      stage: string;
+      goals: unknown;
+    } | null = null;
+    let roles: string[] = [];
+
+    if (collab?.id) {
+      const { data: ws } = await supabase
+        .from("workspaces")
+        .select("id, project_name, problem, target_users, solution, stage, goals")
+        .eq("collaboration_id", collab.id)
+        .maybeSingle();
+      if (ws) {
+        workspace = ws;
+        const { data: members } = await supabase
+          .from("workspace_members")
+          .select("role")
+          .eq("workspace_id", ws.id);
+        roles = (members ?? []).map((m) => m.role).filter(Boolean);
+      }
     }
+
+    const workspaceReady = Boolean(
+      workspace?.project_name?.trim() &&
+        workspace?.problem?.trim() &&
+        workspace?.target_users?.trim() &&
+        workspace?.solution?.trim(),
+    );
+    const directionReady = Boolean(
+      direction?.project_title?.trim() &&
+        direction?.problem?.trim() &&
+        direction?.target_users?.trim() &&
+        direction?.solution?.trim(),
+    );
+
+    if (!workspaceReady && !directionReady) {
+      throw new Error("Complete your project details before generating a proposal.");
+    }
+
 
     const { data: report } = await supabase
       .from("compatibility_reports")
@@ -68,7 +109,8 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
 Founder A: ${JSON.stringify(founder("a"))}
 Founder B: ${JSON.stringify(founder("b"))}
 Compatibility: ${JSON.stringify(report ?? "not generated")}
-Shared project direction: ${JSON.stringify(direction)}
+Shared project direction: ${JSON.stringify(workspaceReady ? workspace : direction)}
+Chosen founder roles: ${JSON.stringify(roles)}
 
 Return strictly this JSON shape:
 {"concept_summary": "<2 sentences>", "problem": "<1-2 sentences>", "target_users": "<1-2 sentences>", "solution": "<2 sentences>", "founder_roles": ["Founder A — ...", "Founder B — ..."], "mvp_scope": [3-5 short strings], "plan_30_days": ["Week 1 — ...", "Week 2 — ...", "Week 3 — ...", "Week 4 — ..."], "key_risks": [3 short strings]}`;
