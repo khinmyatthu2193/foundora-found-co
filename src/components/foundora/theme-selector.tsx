@@ -19,7 +19,7 @@ export function ThemeSelector({
   className?: string;
 }) {
   const { theme, setTheme } = useTheme();
-  const current = THEMES.find((t) => t.id === theme) ?? THEMES[0];
+  const current = THEMES.find((t) => t.id === theme);
 
   return (
     <DropdownMenu>
@@ -31,7 +31,7 @@ export function ThemeSelector({
           className={cn("gap-2", className)}
         >
           <Palette className="size-4 text-primary" />
-          {showLabel && <span className="hidden sm:inline">{current.label}</span>}
+          {showLabel && <span className="hidden sm:inline">{current?.label ?? "Sky"}</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
