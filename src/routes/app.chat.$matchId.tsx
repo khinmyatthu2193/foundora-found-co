@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CompatibilityCard } from "@/components/foundora/compatibility-card";
+import { GuidedConversation } from "@/components/foundora/guided-conversation";
+import { ProjectDirectionCard } from "@/components/foundora/project-direction-card";
+import { ProposalCard } from "@/components/foundora/proposal-card";
 import {
   EmptyState,
   FounderAvatar,
