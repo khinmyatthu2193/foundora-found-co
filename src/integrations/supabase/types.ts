@@ -98,48 +98,63 @@ export type Database = {
         Row: {
           anonymous_name: string
           available_hours: number
+          avatar_url: string | null
           commitment_level: string | null
           created_at: string
           desired_partner_traits: string[]
           experience_level: string | null
+          github_url: string | null
           id: string
           industry_interests: string[]
+          linkedin_url: string | null
           looking_for: string | null
+          portfolio_url: string | null
           real_name: string | null
           skills: string[]
           updated_at: string
+          website_url: string | null
           what_to_build: string | null
           working_style: string | null
         }
         Insert: {
           anonymous_name: string
           available_hours?: number
+          avatar_url?: string | null
           commitment_level?: string | null
           created_at?: string
           desired_partner_traits?: string[]
           experience_level?: string | null
+          github_url?: string | null
           id: string
           industry_interests?: string[]
+          linkedin_url?: string | null
           looking_for?: string | null
+          portfolio_url?: string | null
           real_name?: string | null
           skills?: string[]
           updated_at?: string
+          website_url?: string | null
           what_to_build?: string | null
           working_style?: string | null
         }
         Update: {
           anonymous_name?: string
           available_hours?: number
+          avatar_url?: string | null
           commitment_level?: string | null
           created_at?: string
           desired_partner_traits?: string[]
           experience_level?: string | null
+          github_url?: string | null
           id?: string
           industry_interests?: string[]
+          linkedin_url?: string | null
           looking_for?: string | null
+          portfolio_url?: string | null
           real_name?: string | null
           skills?: string[]
           updated_at?: string
+          website_url?: string | null
           what_to_build?: string | null
           working_style?: string | null
         }
@@ -155,10 +170,15 @@ export type Database = {
         Returns: {
           anonymous_name: string
           available_hours: number
+          avatar_url: string
           commitment_level: string
           desired_partner_traits: string[]
           discovery_id: string
+          email_verified: boolean
           experience_level: string
+          has_github: boolean
+          has_linkedin: boolean
+          has_portfolio: boolean
           industry_interests: string[]
           interest_sent: boolean
           is_matched: boolean
@@ -167,15 +187,24 @@ export type Database = {
           working_style: string
         }[]
       }
+      generate_anonymous_name: { Args: never; Returns: string }
       incoming_interests: {
         Args: never
         Returns: {
           anonymous_name: string
+          available_hours: number
+          avatar_url: string
           created_at: string
           discovery_id: string
+          email_verified: boolean
+          experience_level: string
+          has_github: boolean
+          has_linkedin: boolean
+          has_portfolio: boolean
           industry_interests: string[]
           interest_sent: boolean
           skills: string[]
+          status: string
         }[]
       }
       is_match_member: {
@@ -186,21 +215,35 @@ export type Database = {
         Args: { p_match_id: string }
         Returns: {
           anonymous_name: string
+          avatar_url: string
           commitment_level: string
           match_id: string
           skills: string[]
         }[]
       }
+      my_email_verified: { Args: never; Returns: boolean }
       my_matches: {
         Args: never
         Returns: {
           anonymous_name: string
           available_hours: number
+          avatar_url: string
           commitment_level: string
           created_at: string
+          email_verified: boolean
+          has_github: boolean
+          has_linkedin: boolean
+          has_portfolio: boolean
           industry_interests: string[]
           match_id: string
           skills: string[]
+        }[]
+      }
+      regenerate_my_anonymous_name: { Args: never; Returns: string }
+      respond_to_interest: {
+        Args: { p_accept: boolean; p_discovery_id: string }
+        Returns: {
+          matched: boolean
         }[]
       }
       send_interest: {
@@ -209,6 +252,7 @@ export type Database = {
           matched: boolean
         }[]
       }
+      suggest_anonymous_name: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
