@@ -1,3 +1,4 @@
+import { formatAvailability } from "@/lib/foundora";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -187,7 +188,7 @@ function MatchesPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Available:{" "}
-                  <span className="font-medium text-foreground">{m.available_hours} hrs/week</span>
+                  <span className="font-medium text-foreground">{formatAvailability(m.available_hours)}</span>
                 </p>
                 <Button asChild className="w-full">
                   <Link to="/app/chat/$matchId" params={{ matchId: m.match_id }}>
