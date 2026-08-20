@@ -1,3 +1,4 @@
+import { formatAvailability } from "@/lib/foundora";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hammer } from "lucide-react";
@@ -174,7 +175,7 @@ function Workspace() {
                 otherwise.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Tag tone="primary">{active.available_hours} hrs/week</Tag>
+                <Tag tone="primary">{formatAvailability(active.available_hours)}</Tag>
                 {active.commitment_level && <Tag>{active.commitment_level}</Tag>}
               </div>
             </CardContent>

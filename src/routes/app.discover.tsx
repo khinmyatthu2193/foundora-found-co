@@ -1,3 +1,4 @@
+import { formatAvailability } from "@/lib/foundora";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Compass, Heart, Loader2 } from "lucide-react";
@@ -157,7 +158,7 @@ function DiscoverPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <Meta label="Available" value={`${f.available_hours} hrs/week`} />
+                    <Meta label="Available" value={formatAvailability(f.available_hours)} />
                     <Meta label="Experience" value={f.experience_level ?? "—"} />
                     <Meta label="Looking for" value={f.looking_for ?? "—"} />
                     <Meta label="Working style" value={f.working_style ?? "—"} />

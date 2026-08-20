@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { FounderProfile } from "@/lib/foundora";
+import { joinValues, splitValues, type FounderProfile } from "@/lib/foundora";
 
 export type ProfileRow = {
   id: string;
@@ -53,8 +53,8 @@ export function rowToForm(row: ProfileRow): FounderProfile {
     industries: row.industry_interests ?? [],
     hoursPerWeek: row.available_hours ?? 20,
     experience: row.experience_level ?? "Intermediate",
-    lookingFor: row.looking_for ?? "Co-founder",
-    workingStyle: row.working_style ?? "Collaborative",
+    lookingFor: splitValues(row.looking_for),
+    workingStyle: splitValues(row.working_style),
     commitment: row.commitment_level ?? "Part-time",
     traits: row.desired_partner_traits ?? [],
     avatarPath: row.avatar_url ?? "",
@@ -73,8 +73,8 @@ export const emptyProfileForm: FounderProfile = {
   industries: [],
   hoursPerWeek: 20,
   experience: "Intermediate",
-  lookingFor: "Co-founder",
-  workingStyle: "Collaborative",
+  lookingFor: ["Co-founder"],
+  workingStyle: ["Collaborative"],
   commitment: "Part-time",
   traits: [],
   avatarPath: "",
@@ -100,8 +100,8 @@ function formToRow(form: FounderProfile, userId: string) {
     industry_interests: form.industries,
     available_hours: form.hoursPerWeek,
     experience_level: form.experience,
-    looking_for: form.lookingFor,
-    working_style: form.workingStyle,
+    looking_for: joinValues(form.lookingFor),
+    working_style: joinValues(form.workingStyle),
     commitment_level: form.commitment,
     desired_partner_traits: form.traits,
     avatar_url: form.avatarPath.trim() || null,
@@ -153,8 +153,14 @@ export function validateProfileForm(form: FounderProfile): string | null {
   if (form.traits.length === 0) {
     return "Choose at least one trait you'd like in a co-founder.";
   }
+  if (form.lookingFor.length === 0) {
+    return "Pick at least one thing you're looking for (co-founder, teammate or advisor).";
+  }
+  if (form.workingStyle.length === 0) {
+    return "Choose at least one working style that describes you.";
+  }
   if (!Number.isFinite(form.hoursPerWeek) || form.hoursPerWeek < 5 || form.hoursPerWeek > 60) {
-    return "Set your weekly availability between 5 and 60 hours.";
+    return "Choose how much time you can commit each week.";
   }
   return null;
 }
@@ -165,15 +171,17 @@ export type CompletionResult = { score: number; nextStep: string | null };
 
 export function profileCompletion(form: FounderProfile, emailVerified = false): CompletionResult {
   const checks: { done: boolean; hint: string }[] = [
+    { done: Boolean(form.anonName), hint: "Generate your anonymous founder name." },
     { done: Boolean(form.avatarPath), hint: "Add a profile photo to feel more human." },
     { done: form.skills.length > 0, hint: "Add your skills." },
     { done: form.industries.length > 0, hint: "Pick your industry interests." },
     { done: Boolean(form.experience), hint: "Set your experience level." },
     { done: form.traits.length > 0, hint: "Add the partner traits you're looking for." },
-    { done: Boolean(form.linkedinUrl), hint: "Add your LinkedIn to reach 100%." },
+    { done: form.lookingFor.length > 0, hint: "Say what you're looking for in a partner." },
+    { done: Boolean(form.linkedinUrl), hint: "Add LinkedIn to increase trust." },
     {
       done: Boolean(form.githubUrl || form.portfolioUrl || form.websiteUrl),
-      hint: "Add GitHub, a portfolio or a personal site.",
+      hint: "Add GitHub to increase trust — or a portfolio / personal site.",
     },
     { done: emailVerified, hint: "Confirm your email to earn the verified badge." },
   ];

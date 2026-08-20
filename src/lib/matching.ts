@@ -117,3 +117,25 @@ export async function sendMessage(matchId: string, content: string): Promise<Cha
   if (error) throw new Error("Your message could not be sent. Please try again.");
   return data as ChatMessageRow;
 }
+
+export type InboxMessage = {
+  id: string;
+  match_id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+};
+
+/**
+ * All messages across the founder's matches (RLS keeps this to their own
+ * conversations). Used for chat unread badges and the conversations list.
+ */
+export async function fetchInboxMessages(): Promise<InboxMessage[]> {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("id, match_id, sender_id, content, created_at")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error("Could not load your conversations.");
+  return (data ?? []) as InboxMessage[];
+}
