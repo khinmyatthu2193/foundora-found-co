@@ -367,3 +367,35 @@ export function useTheme() {
 
   return { theme, setTheme };
 }
+
+/* ------------------------------ appearance -------------------------------- */
+
+export type Appearance = "light" | "dark";
+const APPEARANCE_KEY = "foundora.appearance";
+
+export function useAppearance() {
+  const [appearance, setAppearanceState] = useState<Appearance>("light");
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(APPEARANCE_KEY) as Appearance | null;
+    const next: Appearance = stored === "dark" ? "dark" : "light";
+    setAppearanceState(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+  }, []);
+
+  const setAppearance = useCallback((next: Appearance) => {
+    setAppearanceState(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+    try {
+      window.localStorage.setItem(APPEARANCE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const toggleAppearance = useCallback(() => {
+    setAppearance(document.documentElement.classList.contains("dark") ? "light" : "dark");
+  }, [setAppearance]);
+
+  return { appearance, setAppearance, toggleAppearance };
+}
