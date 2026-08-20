@@ -16,6 +16,7 @@ export type MatchSummary = TrustFlags & {
   industry_interests: string[];
   commitment_level: string | null;
   available_hours: number;
+  profile_strength: number;
   is_premium: boolean;
 };
 
@@ -27,6 +28,7 @@ export type IncomingInterest = TrustFlags & {
   industry_interests: string[];
   experience_level: string | null;
   available_hours: number;
+  profile_strength: number;
   status: string;
   created_at: string;
   interest_sent: boolean;
