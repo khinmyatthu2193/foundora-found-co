@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { computeCompatibility, scoreBand } from "@/lib/compatibility-score";
+
 
 /**
  * AI compatibility analysis for a mutual match.
