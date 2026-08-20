@@ -102,28 +102,91 @@ function Chips({
 }
 
 function ProfilePage() {
-  const { state, saveProfile } = useFoundora();
-  const [editing, setEditing] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: profile,
+    isLoading,
+    error: loadError,
+    refetch,
+  } = useQuery({ queryKey: ["my-profile"], queryFn: fetchMyProfile });
+
+  const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<FounderProfile>(emptyProfile);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (state.profile) {
-      setForm(state.profile);
+    if (profile) {
+      setForm(rowToForm(profile));
       setEditing(false);
+    } else if (profile === null) {
+      setEditing(true);
     }
-  }, [state.profile]);
+  }, [profile]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (next: FounderProfile) => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) throw new Error("Your session expired. Please log in again.");
+      await upsertMyProfile(next, data.user.id);
+    },
+    onSuccess: async () => {
+      setSaveError(null);
+      await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      setEditing(false);
+      toast.success("Profile saved", { description: "Your founder profile is up to date." });
+    },
+    onError: (e: unknown) => {
+      const message = e instanceof Error ? e.message : "Could not save your profile.";
+      setSaveError(message);
+      toast.error("Save failed", { description: message });
+    },
+  });
 
   const set = <K extends keyof FounderProfile>(k: K, v: FounderProfile[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   const save = () => {
-    saveProfile(form);
-    setEditing(false);
-    toast.success("Profile saved", { description: "Your founder profile is up to date." });
+    if (!form.anonName.trim()) {
+      setSaveError("Add an anonymous founder name before saving.");
+      return;
+    }
+    saveMutation.mutate(form);
   };
 
-  if (!editing && state.profile) {
-    const p = state.profile;
+  if (isLoading) {
+    return (
+      <Section className="pt-8" title="Founder profile" description="Loading your profile…">
+        <Card className="border-border shadow-soft">
+          <CardContent className="space-y-3 p-6">
+            <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-72 animate-pulse rounded bg-muted" />
+            <div className="h-24 w-full animate-pulse rounded bg-muted" />
+          </CardContent>
+        </Card>
+      </Section>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Section className="pt-8" title="Founder profile" description="We couldn't load your profile.">
+        <Card className="border-border shadow-soft">
+          <CardContent className="space-y-4 p-6">
+            <p className="text-sm text-destructive">
+              {loadError instanceof Error ? loadError.message : "Something went wrong."}
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </Section>
+    );
+  }
+
+  if (!editing && profile) {
+    const p = rowToForm(profile);
+
     return (
       <Section className="pt-8" title="Your founder profile" description="This is how you appear to other founders — anonymously.">
         <div className="grid gap-4 lg:grid-cols-3">
