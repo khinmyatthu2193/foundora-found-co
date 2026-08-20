@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CompatibilityCard } from "@/components/foundora/compatibility-card";
 import {
   EmptyState,
   FounderAvatar,
-  AiInsightsCard,
   PlanBadge,
   PrivacyBadge,
   Section,
@@ -133,10 +133,12 @@ function ChatPage() {
         </div>
       </div>
 
-      <AiInsightsCard
+      <CompatibilityCard
         className="mt-4"
+        userId={user.id}
+        matchId={matchId}
         premium={plan.data === "premium"}
-        context={other.anonymous_name}
+        otherName={other.anonymous_name}
       />
 
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
