@@ -13,6 +13,7 @@ import {
   Tag,
 } from "@/components/foundora/ui-bits";
 import { fetchMatchHeader, fetchMessages, sendMessage } from "@/lib/matching";
+import { markChatRead } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/chat/$matchId")({
@@ -64,6 +65,13 @@ function ChatPage() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages.data?.length]);
+
+  // Viewing the conversation marks everything in it as read.
+  const latestAt = messages.data?.[messages.data.length - 1]?.created_at;
+  useEffect(() => {
+    if (!messages.data) return;
+    markChatRead(matchId, "", 0); // placeholder
+  }, [messages.data, matchId]);
 
   if (header.isLoading) {
     return (

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Heart, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   TrustBadges,
 } from "@/components/foundora/ui-bits";
 import { fetchIncomingInterests, fetchMyMatches, respondToInterest } from "@/lib/matching";
+import { markMatchesSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/app/matches")({
   head: () => ({
@@ -62,6 +64,11 @@ function MatchesPage() {
   });
 
   const pending = (incoming.data ?? []).filter((i) => !i.interest_sent && i.status === "pending");
+
+  // Opening this page clears the "interest received" badge in the navbar.
+  useEffect(() => {
+    if (!incoming.isLoading) markMatchesSeen(user.id);
+  }, [incoming.isLoading, incoming.dataUpdatedAt, user.id]);
 
   return (
     <Section
