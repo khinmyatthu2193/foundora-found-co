@@ -21,7 +21,7 @@ import {
   SKILL_OPTIONS,
   TRAIT_OPTIONS,
   WORKING_STYLE_OPTIONS,
-  useFoundora,
+  
   type FounderProfile,
 } from "@/lib/foundora";
 import { cn } from "@/lib/utils";
