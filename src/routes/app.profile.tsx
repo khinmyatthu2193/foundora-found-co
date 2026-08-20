@@ -21,7 +21,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FounderAvatar,
@@ -32,6 +31,7 @@ import {
   TrustBadges,
 } from "@/components/foundora/ui-bits";
 import {
+  AVAILABILITY_OPTIONS,
   COMMITMENT_OPTIONS,
   EXPERIENCE_OPTIONS,
   INDUSTRY_OPTIONS,
@@ -39,6 +39,7 @@ import {
   SKILL_OPTIONS,
   TRAIT_OPTIONS,
   WORKING_STYLE_OPTIONS,
+  formatAvailability,
   type FounderProfile,
 } from "@/lib/foundora";
 import { cn } from "@/lib/utils";
@@ -290,17 +291,17 @@ function ProfilePage() {
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Available hours">
-                  <p className="text-sm">{p.hoursPerWeek} hrs / week</p>
+                <Field label="Availability">
+                  <p className="text-sm">{formatAvailability(p.hoursPerWeek)}</p>
                 </Field>
                 <Field label="Experience">
                   <p className="text-sm">{p.experience}</p>
                 </Field>
                 <Field label="Looking for">
-                  <p className="text-sm">{p.lookingFor}</p>
+                  <p className="text-sm">{p.lookingFor.join(", ") || "—"}</p>
                 </Field>
                 <Field label="Working style">
-                  <p className="text-sm">{p.workingStyle}</p>
+                  <p className="text-sm">{p.workingStyle.join(", ") || "—"}</p>
                 </Field>
                 <Field label="Commitment">
                   <p className="text-sm">{p.commitment}</p>
@@ -531,15 +532,22 @@ function ProfilePage() {
               />
             </div>
 
-            <div className="space-y-3">
-              <Label>Available hours per week: {form.hoursPerWeek}</Label>
-              <Slider
-                value={[form.hoursPerWeek]}
-                min={5}
-                max={60}
-                step={5}
-                onValueChange={(v) => set("hoursPerWeek", v[0] ?? 20)}
+            <div className="space-y-2">
+              <Label>How much time can you commit?</Label>
+              <Chips
+                multi={false}
+                options={AVAILABILITY_OPTIONS.map((o) => o.label)}
+                value={[formatAvailability(form.hoursPerWeek)]}
+                onChange={(v) =>
+                  set(
+                    "hoursPerWeek",
+                    AVAILABILITY_OPTIONS.find((o) => o.label === v[0])?.value ?? 20,
+                  )
+                }
               />
+              <p className="text-xs text-muted-foreground">
+                Pick the option closest to your real week — you can change it any time.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -555,21 +563,21 @@ function ProfilePage() {
             <div className="space-y-2">
               <Label>Looking for</Label>
               <Chips
-                multi={false}
                 options={LOOKING_FOR_OPTIONS}
-                value={[form.lookingFor]}
-                onChange={(v) => set("lookingFor", v[0] ?? "Co-founder")}
+                value={form.lookingFor}
+                onChange={(v) => set("lookingFor", v)}
               />
+              <p className="text-xs text-muted-foreground">Choose as many as apply.</p>
             </div>
 
             <div className="space-y-2">
               <Label>Working style</Label>
               <Chips
-                multi={false}
                 options={WORKING_STYLE_OPTIONS}
-                value={[form.workingStyle]}
-                onChange={(v) => set("workingStyle", v[0] ?? "Collaborative")}
+                value={form.workingStyle}
+                onChange={(v) => set("workingStyle", v)}
               />
+              <p className="text-xs text-muted-foreground">Choose as many as apply.</p>
             </div>
 
             <div className="space-y-2">
@@ -585,6 +593,7 @@ function ProfilePage() {
             <div className="space-y-2">
               <Label>Desired partner traits</Label>
               <Chips options={TRAIT_OPTIONS} value={form.traits} onChange={(v) => set("traits", v)} />
+              <p className="text-xs text-muted-foreground">Choose as many as apply.</p>
             </div>
 
             <div className="space-y-3 border-t border-border pt-5">
