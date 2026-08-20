@@ -19,6 +19,7 @@ export type ProfileRow = {
   github_url: string | null;
   portfolio_url: string | null;
   website_url: string | null;
+  subscription_status: string;
 };
 
 export type TrustFlags = {
@@ -42,6 +43,7 @@ export type DiscoveryFounder = TrustFlags & {
   desired_partner_traits: string[];
   interest_sent: boolean;
   is_matched: boolean;
+  is_premium: boolean;
 };
 
 export function rowToForm(row: ProfileRow): FounderProfile {
@@ -113,7 +115,7 @@ function formToRow(form: FounderProfile, userId: string) {
 }
 
 const PROFILE_COLUMNS =
-  "id, anonymous_name, real_name, skills, what_to_build, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits, avatar_url, linkedin_url, github_url, portfolio_url, website_url";
+  "id, anonymous_name, real_name, skills, what_to_build, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits, avatar_url, linkedin_url, github_url, portfolio_url, website_url, subscription_status";
 
 function describe(error: { message: string; code?: string; details?: string; hint?: string }) {
   if (error.code === "42501" || /row-level security/i.test(error.message)) {

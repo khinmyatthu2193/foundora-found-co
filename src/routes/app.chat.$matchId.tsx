@@ -8,10 +8,13 @@ import { Input } from "@/components/ui/input";
 import {
   EmptyState,
   FounderAvatar,
+  AiInsightsCard,
+  PlanBadge,
   PrivacyBadge,
   Section,
   Tag,
 } from "@/components/foundora/ui-bits";
+import { fetchMyPlan, planQueryKey } from "@/lib/premium";
 import { fetchMatchHeader, fetchMessages, sendMessage } from "@/lib/matching";
 import { markChatRead } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -40,6 +43,11 @@ function ChatPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+
+  const plan = useQuery({
+    queryKey: planQueryKey(user.id),
+    queryFn: () => fetchMyPlan(user.id),
+  });
 
   const header = useQuery({
     queryKey: ["match-header", user.id, matchId],
@@ -109,6 +117,7 @@ function ChatPage() {
             <div>
               <h1 className="text-xl font-semibold md:text-2xl">{other.anonymous_name}</h1>
               <p className="text-sm text-muted-foreground">Anonymous conversation</p>
+              <PlanBadge premium={other.is_premium} size="sm" className="mt-1" />
             </div>
           </div>
           <PrivacyBadge />
@@ -122,6 +131,12 @@ function ChatPage() {
           {other.commitment_level && <Tag>{other.commitment_level}</Tag>}
         </div>
       </div>
+
+      <AiInsightsCard
+        className="mt-4"
+        premium={plan.data === "premium"}
+        context={other.anonymous_name}
+      />
 
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
         <div className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto p-5">

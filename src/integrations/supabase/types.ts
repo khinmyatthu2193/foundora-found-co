@@ -111,6 +111,7 @@ export type Database = {
           portfolio_url: string | null
           real_name: string | null
           skills: string[]
+          subscription_status: string
           updated_at: string
           website_url: string | null
           what_to_build: string | null
@@ -132,6 +133,7 @@ export type Database = {
           portfolio_url?: string | null
           real_name?: string | null
           skills?: string[]
+          subscription_status?: string
           updated_at?: string
           website_url?: string | null
           what_to_build?: string | null
@@ -153,6 +155,7 @@ export type Database = {
           portfolio_url?: string | null
           real_name?: string | null
           skills?: string[]
+          subscription_status?: string
           updated_at?: string
           website_url?: string | null
           what_to_build?: string | null
@@ -182,6 +185,7 @@ export type Database = {
           industry_interests: string[]
           interest_sent: boolean
           is_matched: boolean
+          is_premium: boolean
           looking_for: string
           skills: string[]
           working_style: string
@@ -203,6 +207,7 @@ export type Database = {
           has_portfolio: boolean
           industry_interests: string[]
           interest_sent: boolean
+          is_premium: boolean
           skills: string[]
           status: string
         }[]
@@ -217,6 +222,7 @@ export type Database = {
           anonymous_name: string
           avatar_url: string
           commitment_level: string
+          is_premium: boolean
           match_id: string
           skills: string[]
         }[]
@@ -235,6 +241,7 @@ export type Database = {
           has_linkedin: boolean
           has_portfolio: boolean
           industry_interests: string[]
+          is_premium: boolean
           match_id: string
           skills: string[]
         }[]

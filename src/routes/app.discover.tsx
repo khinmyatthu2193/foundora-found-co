@@ -10,6 +10,7 @@ import {
   EmptyState,
   FounderAvatar,
   PrivacyBadge,
+  RecommendedBadge,
   Section,
   Tag,
   TrustBadges,
@@ -134,6 +135,8 @@ function DiscoverPage() {
                     </div>
                     <PrivacyBadge />
                   </div>
+
+                  {f.is_premium && <RecommendedBadge />}
 
                   <TrustBadges flags={f} />
 

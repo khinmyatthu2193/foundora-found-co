@@ -16,6 +16,7 @@ export type MatchSummary = TrustFlags & {
   industry_interests: string[];
   commitment_level: string | null;
   available_hours: number;
+  is_premium: boolean;
 };
 
 export type IncomingInterest = TrustFlags & {
@@ -29,6 +30,7 @@ export type IncomingInterest = TrustFlags & {
   status: string;
   created_at: string;
   interest_sent: boolean;
+  is_premium: boolean;
 };
 
 export type MatchHeader = {
@@ -37,6 +39,7 @@ export type MatchHeader = {
   avatar_url: string | null;
   skills: string[];
   commitment_level: string | null;
+  is_premium: boolean;
 };
 
 export type ChatMessageRow = {
