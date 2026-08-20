@@ -14,13 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          anonymous_name: string
+          available_hours: number
+          commitment_level: string | null
+          created_at: string
+          desired_partner_traits: string[]
+          experience_level: string | null
+          id: string
+          industry_interests: string[]
+          looking_for: string | null
+          real_name: string | null
+          skills: string[]
+          updated_at: string
+          what_to_build: string | null
+          working_style: string | null
+        }
+        Insert: {
+          anonymous_name: string
+          available_hours?: number
+          commitment_level?: string | null
+          created_at?: string
+          desired_partner_traits?: string[]
+          experience_level?: string | null
+          id: string
+          industry_interests?: string[]
+          looking_for?: string | null
+          real_name?: string | null
+          skills?: string[]
+          updated_at?: string
+          what_to_build?: string | null
+          working_style?: string | null
+        }
+        Update: {
+          anonymous_name?: string
+          available_hours?: number
+          commitment_level?: string | null
+          created_at?: string
+          desired_partner_traits?: string[]
+          experience_level?: string | null
+          id?: string
+          industry_interests?: string[]
+          looking_for?: string | null
+          real_name?: string | null
+          skills?: string[]
+          updated_at?: string
+          what_to_build?: string | null
+          working_style?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      discover_founders: {
+        Args: never
+        Returns: {
+          anonymous_name: string
+          available_hours: number
+          commitment_level: string
+          desired_partner_traits: string[]
+          discovery_id: string
+          experience_level: string
+          industry_interests: string[]
+          looking_for: string
+          skills: string[]
+          working_style: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
