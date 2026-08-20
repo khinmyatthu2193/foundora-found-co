@@ -12,8 +12,8 @@ export type FounderProfile = {
   industries: string[];
   hoursPerWeek: number;
   experience: string;
-  lookingFor: string;
-  workingStyle: string;
+  lookingFor: string[];
+  workingStyle: string[];
   commitment: string;
   traits: string[];
   avatarPath: string;
@@ -93,6 +93,34 @@ export const INDUSTRY_OPTIONS = [
   "Gaming",
   "Creator Economy",
 ];
+
+export const AVAILABILITY_OPTIONS: { value: number; label: string }[] = [
+  { value: 5, label: "5 hrs/week" },
+  { value: 10, label: "10 hrs/week" },
+  { value: 20, label: "20 hrs/week" },
+  { value: 30, label: "30 hrs/week" },
+  { value: 40, label: "Full-time" },
+];
+
+/** Human label for a stored weekly-hours value. */
+export function formatAvailability(hours: number | null | undefined): string {
+  if (!hours && hours !== 0) return "—";
+  if (hours >= 40) return "Full-time";
+  return `${hours} hrs/week`;
+}
+
+/** Multi-value profile text columns are stored comma separated. */
+export function splitValues(value: string | null | undefined): string[] {
+  return (value ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+export function joinValues(values: string[]): string | null {
+  const cleaned = values.map((v) => v.trim()).filter(Boolean);
+  return cleaned.length ? cleaned.join(", ") : null;
+}
 
 export const EXPERIENCE_OPTIONS = ["Beginner", "Intermediate", "Experienced"];
 export const LOOKING_FOR_OPTIONS = ["Co-founder", "Teammate", "Advisor"];
