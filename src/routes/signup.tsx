@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo, PrivacyBadge } from "@/components/foundora/ui-bits";
-import { useFoundora } from "@/lib/foundora";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
