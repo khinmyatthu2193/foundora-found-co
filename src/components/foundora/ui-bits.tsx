@@ -137,7 +137,7 @@ export function Logo({ className }: { className?: string }) {
       <img
         src={logoAsset.url}
         alt="Foundora — find, match, build"
-        className="h-9 w-auto"
+        className="h-9 w-auto md:h-10"
         loading="eager"
         decoding="async"
       />
