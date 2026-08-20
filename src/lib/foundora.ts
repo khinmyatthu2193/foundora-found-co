@@ -140,6 +140,8 @@ export function clearFoundoraUserState() {
   }
 }
 
+const THEME_KEY = "foundora.theme";
+
 /* ---------------------------------- theme --------------------------------- */
 
 export const THEMES: { id: ThemeName; label: string; swatch: string[] }[] = [
