@@ -1,14 +1,33 @@
-import { formatAvailability } from "@/lib/foundora";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Hammer } from "lucide-react";
-import { useState } from "react";
+import { Hammer, Loader2, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { EmptyState, Section, Tag } from "@/components/foundora/ui-bits";
-import { fetchMyMatches } from "@/lib/matching";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ProposalCard } from "@/components/foundora/proposal-card";
+import { EmptyState, FounderAvatar, Section, Tag } from "@/components/foundora/ui-bits";
+import { fetchMyPlan, planQueryKey } from "@/lib/premium";
+import {
+  FOUNDER_ROLES,
+  GOALS,
+  STAGES,
+  fetchMyWorkspaces,
+  fetchWorkspace,
+  fetchWorkspaceRoles,
+  saveWorkspace,
+  setMyWorkspaceRole,
+  workspaceIsReady,
+  workspaceListQueryKey,
+  workspaceQueryKey,
+  workspaceRolesQueryKey,
+  type WorkspaceRow,
+  type WorkspaceSummary,
+} from "@/lib/workspace";
 
 export const Route = createFileRoute("/app/workspace")({
   head: () => ({
@@ -17,7 +36,7 @@ export const Route = createFileRoute("/app/workspace")({
       {
         name: "description",
         content:
-          "A simple shared workspace for your Foundora match: roles, MVP goal, 30-day plan and tasks.",
+          "A shared workspace for founders building together: project overview, roles, goals and the AI startup proposal.",
       },
       { property: "og:title", content: "Startup workspace — Foundora" },
       {
@@ -26,29 +45,18 @@ export const Route = createFileRoute("/app/workspace")({
       },
     ],
   }),
-  component: Workspace,
+  component: WorkspacePage,
 });
 
-const DEFAULT_TASKS = [
-  { id: "1", text: "Interview 5 potential users", done: false },
-  { id: "2", text: "Draft clickable prototype", done: false },
-  { id: "3", text: "Agree on weekly working rhythm", done: false },
-  { id: "4", text: "Ship first MVP workflow", done: false },
-];
-
-function Workspace() {
+function WorkspacePage() {
   const { user } = Route.useRouteContext();
-  const { data: matches, isLoading } = useQuery({
-    queryKey: ["matches", user.id],
-    queryFn: fetchMyMatches,
+
+  const list = useQuery({
+    queryKey: workspaceListQueryKey(user.id),
+    queryFn: fetchMyWorkspaces,
   });
 
-  const [tasks, setTasks] = useState(DEFAULT_TASKS);
-  const [newTask, setNewTask] = useState("");
-
-  const active = matches?.[0];
-
-  if (isLoading) {
+  if (list.isLoading) {
     return (
       <Section className="pt-8">
         <p className="text-sm text-muted-foreground">Loading your workspace…</p>
@@ -56,13 +64,15 @@ function Workspace() {
     );
   }
 
+  const active = list.data?.[0];
+
   if (!active) {
     return (
       <Section className="pt-8">
         <EmptyState
           icon={<Hammer className="size-8" />}
-          title="No active workspace yet"
-          description="Once you and another founder match, your shared workspace appears here."
+          title="No workspace yet"
+          description="Complete your match conversation first, then both founders confirm “Start building together” to open a shared workspace."
           action={
             <Button asChild>
               <Link to="/app/matches">Go to matches</Link>
@@ -73,144 +83,294 @@ function Workspace() {
     );
   }
 
-  const partner = active.anonymous_name;
+  return <WorkspaceDetail userId={user.id} summary={active} />;
+}
+
+function WorkspaceDetail({ userId, summary }: { userId: string; summary: WorkspaceSummary }) {
+  const queryClient = useQueryClient();
+  const workspaceId = summary.workspace_id;
+
+  const plan = useQuery({
+    queryKey: planQueryKey(userId),
+    queryFn: () => fetchMyPlan(userId),
+  });
+
+  const workspace = useQuery({
+    queryKey: workspaceQueryKey(userId, workspaceId),
+    queryFn: () => fetchWorkspace(workspaceId),
+  });
+
+  const roles = useQuery({
+    queryKey: workspaceRolesQueryKey(userId, workspaceId),
+    queryFn: () => fetchWorkspaceRoles(workspaceId),
+  });
+
+  const [draft, setDraft] = useState<Partial<WorkspaceRow>>({});
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (dirty || !workspace.data) return;
+    const w = workspace.data;
+    setDraft({
+      project_name: w.project_name,
+      problem: w.problem,
+      target_users: w.target_users,
+      solution: w.solution,
+      stage: w.stage,
+    });
+  }, [workspace.data, dirty]);
+
+  const save = useMutation({
+    mutationFn: () =>
+      saveWorkspace(workspaceId, {
+        project_name: draft.project_name ?? "",
+        problem: draft.problem ?? "",
+        target_users: draft.target_users ?? "",
+        solution: draft.solution ?? "",
+        stage: draft.stage ?? "idea",
+      }),
+    onSuccess: (row) => {
+      setDirty(false);
+      queryClient.setQueryData(workspaceQueryKey(userId, workspaceId), row);
+      void queryClient.invalidateQueries({ queryKey: workspaceListQueryKey(userId) });
+      toast.success("Workspace saved for both founders");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save."),
+  });
+
+  const toggleGoal = useMutation({
+    mutationFn: (key: string) => {
+      const goals = { ...(workspace.data?.goals ?? {}) };
+      goals[key] = !goals[key];
+      return saveWorkspace(workspaceId, { goals });
+    },
+    onSuccess: (row) => queryClient.setQueryData(workspaceQueryKey(userId, workspaceId), row),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update the goal."),
+  });
+
+  const chooseRole = useMutation({
+    mutationFn: (role: string) => setMyWorkspaceRole(workspaceId, role),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: workspaceRolesQueryKey(userId, workspaceId),
+      });
+      toast.success("Role updated");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save your role."),
+  });
+
+  const set = (key: keyof WorkspaceRow, value: string) => {
+    setDirty(true);
+    setDraft((d) => ({ ...d, [key]: value }));
+  };
+
+  const myRole = roles.data?.find((r) => r.user_is_me)?.role ?? "";
+  const ready = workspaceIsReady(workspace.data);
+  const empty = workspace.data && !workspace.data.project_name.trim() && !workspace.data.problem.trim();
 
   return (
     <Section
       className="pt-8"
       title="Shared workspace"
-      description={`A shared workspace with ${partner}.`}
+      description={`Building together with ${summary.partner_name}.`}
       action={
         <Button asChild variant="outline" size="sm">
-          <Link to="/app/chat/$matchId" params={{ matchId: active.match_id }}>
+          <Link to="/app/chat/$matchId" params={{ matchId: summary.match_id }}>
             Open conversation
           </Link>
         </Button>
       }
     >
+      {empty && (
+        <p className="mb-4 rounded-xl border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+          Start defining your startup direction.
+        </p>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="border-border shadow-soft lg:col-span-2">
-          <CardContent className="space-y-6 p-6">
-            <Block
-              title="Project overview"
-              text="Use your first conversations to agree on the problem you both want to solve."
-            />
-            <Block
-              title="MVP goal"
-              text="One workflow end to end: the smallest thing a first user would find genuinely useful."
-            />
-            <div>
-              <Head>Founder roles</Head>
-              <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                <RoleCard name="You" role="Define your focus together" tags={["Product"]} />
-                <RoleCard
-                  name={partner}
-                  role="Complementary strengths"
-                  tags={active.skills.slice(0, 2)}
+          <CardContent className="p-6">
+            <Head>Project overview</Head>
+            <form
+              className="mt-3 space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!save.isPending) save.mutate();
+              }}
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="ws-name">Startup / project name</Label>
+                <Input
+                  id="ws-name"
+                  value={draft.project_name ?? ""}
+                  onChange={(e) => set("project_name", e.target.value)}
+                  placeholder="Working name for what you're building"
                 />
               </div>
-            </div>
-            <div>
-              <Head>First 30-day plan</Head>
-              <ol className="mt-2 space-y-2 text-sm">
-                <li>Week 1 — 10 user interviews and problem validation</li>
-                <li>Week 2 — clickable prototype and scope lock</li>
-                <li>Week 3 — working MVP of the core workflow</li>
-                <li>Week 4 — pilot with first users and collect feedback</li>
-              </ol>
-            </div>
+              <Field
+                id="ws-problem"
+                label="Problem statement"
+                value={draft.problem ?? ""}
+                onChange={(v) => set("problem", v)}
+                placeholder="What pain are you attacking?"
+              />
+              <Field
+                id="ws-users"
+                label="Target users"
+                value={draft.target_users ?? ""}
+                onChange={(v) => set("target_users", v)}
+                placeholder="Who feels this problem most?"
+              />
+              <Field
+                id="ws-solution"
+                label="Solution idea"
+                value={draft.solution ?? ""}
+                onChange={(v) => set("solution", v)}
+                placeholder="What will you build first?"
+              />
+              <div className="space-y-1.5">
+                <Label>Current stage</Label>
+                <div className="flex flex-wrap gap-2">
+                  {STAGES.map((s) => (
+                    <Button
+                      key={s}
+                      type="button"
+                      size="sm"
+                      variant={(draft.stage ?? "idea") === s ? "default" : "outline"}
+                      onClick={() => set("stage", s)}
+                      className="capitalize"
+                    >
+                      {s}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={save.isPending}>
+                  {save.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Save className="size-4" />
+                  )}
+                  Save workspace
+                </Button>
+                {dirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
+              </div>
+            </form>
           </CardContent>
         </Card>
 
         <div className="space-y-4">
           <Card className="border-border shadow-soft">
             <CardContent className="p-6">
-              <Head>Task list</Head>
+              <Head>Founder roles</Head>
               <div className="mt-3 space-y-3">
-                {tasks.map((t) => (
-                  <label key={t.id} className="flex items-start gap-3 text-sm">
-                    <Checkbox
-                      checked={t.done}
-                      onCheckedChange={(v) =>
-                        setTasks((ts) =>
-                          ts.map((x) => (x.id === t.id ? { ...x, done: Boolean(v) } : x)),
-                        )
-                      }
-                    />
-                    <span className={t.done ? "text-muted-foreground line-through" : ""}>
-                      {t.text}
-                    </span>
-                  </label>
+                {roles.data?.map((r) => (
+                  <div
+                    key={r.anonymous_name + String(r.user_is_me)}
+                    className="flex items-center gap-3 rounded-xl border border-border p-3"
+                  >
+                    <FounderAvatar path={r.avatar_url} name={r.anonymous_name} />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {r.user_is_me ? "You" : r.anonymous_name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {r.role ? `${r.role} Founder` : "No role chosen yet"}
+                      </p>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <form
-                className="mt-4 flex gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!newTask.trim()) return;
-                  setTasks((ts) => [
-                    ...ts,
-                    { id: crypto.randomUUID(), text: newTask.trim(), done: false },
-                  ]);
-                  setNewTask("");
-                }}
-              >
-                <Input
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  placeholder="Add a task"
-                />
-                <Button type="submit" variant="outline">
-                  Add
-                </Button>
-              </form>
+              <div className="mt-4 space-y-1.5">
+                <Label>Your role</Label>
+                <div className="flex flex-wrap gap-2">
+                  {FOUNDER_ROLES.map((r) => (
+                    <Button
+                      key={r}
+                      type="button"
+                      size="sm"
+                      variant={myRole === r ? "default" : "outline"}
+                      disabled={chooseRole.isPending}
+                      onClick={() => chooseRole.mutate(r)}
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card className="border-border shadow-soft">
             <CardContent className="p-6">
-              <Head>Match summary</Head>
-              <p className="mt-2 text-sm text-muted-foreground">
-                You and {partner} both expressed interest. Identities stay private until you decide
-                otherwise.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Tag tone="primary">{formatAvailability(active.available_hours)}</Tag>
-                {active.commitment_level && <Tag>{active.commitment_level}</Tag>}
+              <Head>Goals</Head>
+              <div className="mt-3 space-y-3">
+                {GOALS.map((g) => {
+                  const done = Boolean(workspace.data?.goals?.[g.key]);
+                  return (
+                    <label key={g.key} className="flex items-start gap-3 text-sm">
+                      <Checkbox
+                        checked={done}
+                        disabled={toggleGoal.isPending}
+                        onCheckedChange={() => toggleGoal.mutate(g.key)}
+                      />
+                      <span className={done ? "text-muted-foreground line-through" : ""}>
+                        {g.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Tag tone="primary">Stage: {workspace.data?.stage ?? "idea"}</Tag>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <ProposalCard
+        className="mt-4"
+        userId={userId}
+        matchId={summary.match_id}
+        premium={plan.data === "premium"}
+        readyOverride={ready}
+        notReadyText="Fill in project name, problem, target users and solution first."
+      />
     </Section>
+  );
+}
+
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <Textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={3}
+      />
+    </div>
   );
 }
 
 function Head({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{children}</p>
-  );
-}
-
-function Block({ title, text }: { title: string; text: string }) {
-  return (
-    <div>
-      <Head>{title}</Head>
-      <p className="mt-1.5 text-sm">{text}</p>
-    </div>
-  );
-}
-
-function RoleCard({ name, role, tags }: { name: string; role: string; tags: string[] }) {
-  return (
-    <div className="rounded-xl border border-border p-4">
-      <p className="font-medium">{name}</p>
-      <p className="text-sm text-muted-foreground">{role}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {tags.map((t) => (
-          <Tag key={t}>{t}</Tag>
-        ))}
-      </div>
-    </div>
   );
 }
