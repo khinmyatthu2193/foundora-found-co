@@ -69,9 +69,10 @@ function ChatPage() {
   // Viewing the conversation marks everything in it as read.
   const latestAt = messages.data?.[messages.data.length - 1]?.created_at;
   useEffect(() => {
-    if (!messages.data) return;
-    markChatRead(matchId, "", 0); // placeholder
-  }, [messages.data, matchId]);
+    if (!header.data) return;
+    markChatRead(user.id, matchId, latestAt ? new Date(latestAt).getTime() : Date.now());
+  }, [header.data, latestAt, matchId, user.id]);
+
 
   if (header.isLoading) {
     return (
