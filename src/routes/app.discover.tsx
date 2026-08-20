@@ -12,6 +12,7 @@ import {
   PrivacyBadge,
   RecommendedBadge,
   Section,
+  StrengthPill,
   Tag,
   TrustBadges,
 } from "@/components/foundora/ui-bits";
@@ -138,7 +139,11 @@ function DiscoverPage() {
 
                   {f.is_premium && <RecommendedBadge />}
 
+                  <StrengthPill value={f.profile_strength} />
+
                   <TrustBadges flags={f} />
+
+                  {f.bio && <p className="text-sm text-muted-foreground">{f.bio}</p>}
 
                   <div>
                     <Label>Skills</Label>
