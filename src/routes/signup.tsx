@@ -177,6 +177,11 @@ function SignUp() {
                 </p>
               )}
 
+              {notice && (
+                <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</p>
+              )}
+
+
               <Button type="submit" className="w-full" size="lg" disabled={!canSubmit}>
                 {loading && <Loader2 className="size-4 animate-spin" />}
                 {loading ? "Creating account…" : "Create account"}
