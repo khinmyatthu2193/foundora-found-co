@@ -69,6 +69,10 @@ function SignUp() {
       setError("Account creation failed. Please try again.");
       return;
     }
+    if ((data.user.identities?.length ?? 0) === 0) {
+      setError("This email already has an account. Please log in.");
+      return;
+    }
     if (!data.session) {
       setNotice("Check your email to confirm your account, then log in to create your profile.");
       return;
