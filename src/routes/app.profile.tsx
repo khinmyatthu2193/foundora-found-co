@@ -287,7 +287,7 @@ function ProfilePage() {
   return (
     <Section
       className="pt-8"
-      title={state.profile ? "Edit founder profile" : "Create your founder profile"}
+      title={profile ? "Edit founder profile" : "Create your founder profile"}
       description="Everything marked private stays hidden until you choose to reveal it."
     >
       <div className="grid gap-4 lg:grid-cols-3">
@@ -409,16 +409,29 @@ function ProfilePage() {
               <Chips options={TRAIT_OPTIONS} value={form.traits} onChange={(v) => set("traits", v)} />
             </div>
 
+            {saveError && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {saveError}
+              </p>
+            )}
+
             <div className="flex flex-wrap gap-3 border-t border-border pt-5">
-              <Button onClick={save} size="lg">
-                <Save className="size-4" /> Save Profile
+              <Button onClick={save} size="lg" disabled={saveMutation.isPending}>
+                <Save className="size-4" />
+                {saveMutation.isPending ? "Saving…" : "Save Profile"}
               </Button>
-              {state.profile && (
-                <Button variant="outline" size="lg" onClick={() => setEditing(false)}>
+              {profile && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setEditing(false)}
+                  disabled={saveMutation.isPending}
+                >
                   Cancel
                 </Button>
               )}
             </div>
+
           </CardContent>
         </Card>
 
