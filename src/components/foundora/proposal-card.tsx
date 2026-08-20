@@ -48,11 +48,16 @@ export function ProposalCard({
   matchId,
   premium,
   className,
+  readyOverride,
+  notReadyText,
 }: {
   userId: string;
   matchId: string;
   premium: boolean;
   className?: string;
+  /** When provided, replaces the shared-direction readiness check. */
+  readyOverride?: boolean;
+  notReadyText?: string;
 }) {
   const queryClient = useQueryClient();
   const generate = useServerFn(generateStartupProposal);
@@ -65,6 +70,7 @@ export function ProposalCard({
   const direction = useQuery({
     queryKey: directionQueryKey(userId, matchId),
     queryFn: () => fetchProjectDirection(matchId),
+    enabled: readyOverride === undefined,
   });
 
   const run = useMutation({
