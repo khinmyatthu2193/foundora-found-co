@@ -293,7 +293,7 @@ function ProfilePage() {
                 min={5}
                 max={60}
                 step={5}
-                onValueChange={([v]) => set("hoursPerWeek", v)}
+                onValueChange={(v) => set("hoursPerWeek", v[0] ?? 20)}
               />
             </div>
 
@@ -303,7 +303,7 @@ function ProfilePage() {
                 multi={false}
                 options={EXPERIENCE_OPTIONS}
                 value={[form.experience]}
-                onChange={([v]) => set("experience", v)}
+                onChange={(v) => set("experience", v[0] ?? "Intermediate")}
               />
             </div>
 
@@ -313,7 +313,7 @@ function ProfilePage() {
                 multi={false}
                 options={LOOKING_FOR_OPTIONS}
                 value={[form.lookingFor]}
-                onChange={([v]) => set("lookingFor", v)}
+                onChange={(v) => set("lookingFor", v[0] ?? "Co-founder")}
               />
             </div>
 
@@ -323,7 +323,7 @@ function ProfilePage() {
                 multi={false}
                 options={WORKING_STYLE_OPTIONS}
                 value={[form.workingStyle]}
-                onChange={([v]) => set("workingStyle", v)}
+                onChange={(v) => set("workingStyle", v[0] ?? "Collaborative")}
               />
             </div>
 
@@ -333,7 +333,7 @@ function ProfilePage() {
                 multi={false}
                 options={COMMITMENT_OPTIONS}
                 value={[form.commitment]}
-                onChange={([v]) => set("commitment", v)}
+                onChange={(v) => set("commitment", v[0] ?? "Part-time")}
               />
             </div>
 
