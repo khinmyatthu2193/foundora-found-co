@@ -123,6 +123,7 @@ export type Database = {
           anonymous_name: string
           available_hours: number
           avatar_url: string | null
+          bio: string | null
           commitment_level: string | null
           created_at: string
           desired_partner_traits: string[]
@@ -145,6 +146,7 @@ export type Database = {
           anonymous_name: string
           available_hours?: number
           avatar_url?: string | null
+          bio?: string | null
           commitment_level?: string | null
           created_at?: string
           desired_partner_traits?: string[]
@@ -167,6 +169,7 @@ export type Database = {
           anonymous_name?: string
           available_hours?: number
           avatar_url?: string | null
+          bio?: string | null
           commitment_level?: string | null
           created_at?: string
           desired_partner_traits?: string[]
@@ -198,6 +201,7 @@ export type Database = {
           anonymous_name: string
           available_hours: number
           avatar_url: string
+          bio: string
           commitment_level: string
           desired_partner_traits: string[]
           discovery_id: string
@@ -211,6 +215,7 @@ export type Database = {
           is_matched: boolean
           is_premium: boolean
           looking_for: string
+          profile_strength: number
           skills: string[]
           working_style: string
         }[]
@@ -232,6 +237,7 @@ export type Database = {
           industry_interests: string[]
           interest_sent: boolean
           is_premium: boolean
+          profile_strength: number
           skills: string[]
           status: string
         }[]
@@ -267,8 +273,13 @@ export type Database = {
           industry_interests: string[]
           is_premium: boolean
           match_id: string
+          profile_strength: number
           skills: string[]
         }[]
+      }
+      profile_strength: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: number
       }
       regenerate_my_anonymous_name: { Args: never; Returns: string }
       respond_to_interest: {
