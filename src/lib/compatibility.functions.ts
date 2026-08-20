@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { computeCompatibility, scoreBand } from "@/lib/compatibility-score";
+
 
 /**
  * AI compatibility analysis for a mutual match.
@@ -43,13 +45,42 @@ export const generateCompatibilityReport = createServerFn({ method: "POST" })
       desired_partner_traits: p === "a" ? input.a_traits : input.b_traits,
     });
 
-    const prompt = `You are a co-founder matching analyst. Compare these two anonymous founders and return JSON only.
+    // Deterministic score — the AI never decides this number.
+    const { score, breakdown } = computeCompatibility(
+      {
+        skills: input.a_skills,
+        industries: input.a_industries,
+        experience: input.a_experience,
+        hours: input.a_hours,
+        workingStyle: input.a_working_style,
+        commitment: input.a_commitment,
+        traits: input.a_traits,
+      },
+      {
+        skills: input.b_skills,
+        industries: input.b_industries,
+        experience: input.b_experience,
+        hours: input.b_hours,
+        workingStyle: input.b_working_style,
+        commitment: input.b_commitment,
+        traits: input.b_traits,
+      },
+    );
+    const band = scoreBand(score);
+
+    const prompt = `You are a co-founder matching analyst. The compatibility score has ALREADY been computed by a deterministic algorithm. Do not invent or change it — explain it.
+
+Computed compatibility score: ${score}/100 (${band})
+Score breakdown (dimension, weight %, sub-score 0-100):
+${breakdown.map((d) => `- ${d.label} (${d.weight}%): ${d.value}`).join("\n")}
 
 Founder A: ${JSON.stringify(founder("a"))}
 Founder B: ${JSON.stringify(founder("b"))}
 
+Write strengths and challenges that are consistent with the breakdown above: high sub-scores become strengths, low sub-scores become challenges. Keep the tone matched to the ${band.toLowerCase()} result.
+
 Return strictly this JSON shape:
-{"score": <integer 0-100>, "strengths": [3 short strings], "challenges": [3 short strings], "discussion_topics": [4 short questions they should discuss]}`;
+{"strengths": [3 short strings], "challenges": [3 short strings], "discussion_topics": [4 short questions they should discuss]}`;
 
     let payload: {
       score: number;
@@ -87,12 +118,13 @@ Return strictly this JSON shape:
       const list = (v: unknown) =>
         Array.isArray(v) ? v.map((x) => String(x)).filter(Boolean).slice(0, 6) : [];
       payload = {
-        score: Math.max(0, Math.min(100, Math.round(Number(parsed["score"]) || 0))),
+        score,
         strengths: list(parsed["strengths"]),
         challenges: list(parsed["challenges"]),
         discussion_topics: list(parsed["discussion_topics"]),
       };
     } catch (e) {
+
       if (e instanceof Error && e.message.startsWith("The AI service")) throw e;
       console.error("[compatibility] generation failed", e);
       throw new Error("Could not generate the compatibility report. Please try again.");
