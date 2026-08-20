@@ -19,6 +19,7 @@ export type ProfileRow = {
   github_url: string | null;
   portfolio_url: string | null;
   website_url: string | null;
+  subscription_status: string;
 };
 
 export type TrustFlags = {
