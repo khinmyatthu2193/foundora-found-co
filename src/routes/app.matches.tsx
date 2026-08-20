@@ -16,7 +16,7 @@ import {
   TrustBadges,
 } from "@/components/foundora/ui-bits";
 import { fetchIncomingInterests, fetchMyMatches, respondToInterest } from "@/lib/matching";
-import { markMatchesSeen } from "@/lib/notifications";
+import { useMarkRead } from "@/lib/notifications";
 
 export const Route = createFileRoute("/app/matches")({
   head: () => ({
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/app/matches")({
 function MatchesPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
+  const { markMatchesSeen } = useMarkRead(user.id);
 
   const matches = useQuery({
     queryKey: ["matches", user.id],
@@ -67,10 +68,11 @@ function MatchesPage() {
 
   const pending = (incoming.data ?? []).filter((i) => !i.interest_sent && i.status === "pending");
 
-  // Opening this page clears the "interest received" badge in the navbar.
+  // Opening this page clears the "interest received" and "new match" badges.
   useEffect(() => {
-    if (!incoming.isLoading) markMatchesSeen(user.id);
-  }, [incoming.isLoading, incoming.dataUpdatedAt, user.id]);
+    if (incoming.isLoading || matches.isLoading) return;
+    void markMatchesSeen();
+  }, [incoming.isLoading, incoming.dataUpdatedAt, matches.isLoading, matches.dataUpdatedAt, markMatchesSeen]);
 
   return (
     <Section

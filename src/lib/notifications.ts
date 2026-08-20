@@ -1,96 +1,119 @@
-import { useMemo, useSyncExternalStore } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Lightweight per-user "read" tracking for navigation badges.
- * Supabase stays the source of truth for interests/messages; this only
- * remembers when *this* browser last opened Matches / a conversation.
+ * Per-user "read" tracking for navigation badges, stored in Supabase
+ * (public.notification_reads) so counts survive refresh and follow the
+ * account across devices. Supabase stays the single source of truth for
+ * interests, matches and messages; this only records when the user last
+ * opened Matches / each conversation.
  */
 
 export type ReadState = { matchesSeenAt: number; chats: Record<string, number> };
 
 const EMPTY: ReadState = { matchesSeenAt: 0, chats: {} };
-const KEY = (userId: string) => `foundora.read.${userId}`;
 
-const listeners = new Set<() => void>();
+export const readStateQueryKey = (userId: string) => ["read-state", userId] as const;
 
-function emit() {
-  for (const l of listeners) l();
+function toMillis(value: unknown): number {
+  if (typeof value !== "string") return 0;
+  const t = new Date(value).getTime();
+  return Number.isFinite(t) ? t : 0;
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  if (typeof window !== "undefined") window.addEventListener("storage", listener);
-  return () => {
-    listeners.delete(listener);
-    if (typeof window !== "undefined") window.removeEventListener("storage", listener);
-  };
+async function requireUserId() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) throw new Error("Your session expired. Please log in again.");
+  return data.user.id;
 }
 
-function readRaw(userId: string): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(KEY(userId));
-  } catch {
-    return null;
-  }
+export async function fetchReadState(): Promise<ReadState> {
+  const userId = await requireUserId();
+  const { data, error } = await supabase
+    .from("notification_reads")
+    .select("matches_seen_at, chats")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return EMPTY;
+  if (!data) return EMPTY;
+
+  const chatsRaw = (data.chats ?? {}) as Record<string, unknown>;
+  const chats: Record<string, number> = {};
+  for (const [matchId, at] of Object.entries(chatsRaw)) chats[matchId] = toMillis(at);
+
+  return { matchesSeenAt: toMillis(data.matches_seen_at), chats };
 }
 
-function parse(raw: string | null): ReadState {
-  if (!raw) return EMPTY;
-  try {
-    const parsed = JSON.parse(raw) as Partial<ReadState>;
-    return {
-      matchesSeenAt: Number(parsed.matchesSeenAt) || 0,
-      chats: parsed.chats && typeof parsed.chats === "object" ? parsed.chats : {},
-    };
-  } catch {
-    return EMPTY;
-  }
-}
+async function saveReadState(next: ReadState) {
+  const userId = await requireUserId();
+  const chats: Record<string, string> = {};
+  for (const [matchId, at] of Object.entries(next.chats)) chats[matchId] = new Date(at).toISOString();
 
-function write(userId: string, next: ReadState) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(KEY(userId), JSON.stringify(next));
-  } catch {
-    /* ignore */
-  }
-  emit();
-}
-
-export function getReadState(userId: string): ReadState {
-  return parse(readRaw(userId));
-}
-
-export function useReadState(userId: string): ReadState {
-  const raw = useSyncExternalStore(
-    subscribe,
-    () => readRaw(userId),
-    () => null,
+  const { error } = await supabase.from("notification_reads").upsert(
+    {
+      user_id: userId,
+      matches_seen_at: new Date(next.matchesSeenAt).toISOString(),
+      chats,
+    },
+    { onConflict: "user_id" },
   );
-  return useMemo(() => parse(raw), [raw]);
+  if (error) throw new Error("Could not update your notifications.");
 }
 
-export function markMatchesSeen(userId: string, at: number = Date.now()) {
-  const current = getReadState(userId);
-  if (current.matchesSeenAt >= at) return;
-  write(userId, { ...current, matchesSeenAt: at });
+/** Current read state for the signed-in founder. */
+export function useReadState(userId: string): ReadState {
+  const { data } = useQuery({
+    queryKey: readStateQueryKey(userId),
+    queryFn: fetchReadState,
+    staleTime: 10_000,
+  });
+  return data ?? EMPTY;
 }
 
-export function markChatRead(userId: string, matchId: string, at: number = Date.now()) {
-  const current = getReadState(userId);
-  if ((current.chats[matchId] ?? 0) >= at) return;
-  write(userId, { ...current, chats: { ...current.chats, [matchId]: at } });
-}
+/** Mutators that persist read state and refresh the badge queries. */
+export function useMarkRead(userId: string) {
+  const queryClient = useQueryClient();
 
-export function clearReadState(userId: string) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(KEY(userId));
-  } catch {
-    /* ignore */
-  }
-  emit();
+  const persist = useCallback(
+    async (update: (current: ReadState) => ReadState | null) => {
+      const current =
+        queryClient.getQueryData<ReadState>(readStateQueryKey(userId)) ??
+        (await queryClient.fetchQuery({
+          queryKey: readStateQueryKey(userId),
+          queryFn: fetchReadState,
+        }));
+      const next = update(current ?? EMPTY);
+      if (!next) return;
+      queryClient.setQueryData(readStateQueryKey(userId), next);
+      try {
+        await saveReadState(next);
+      } catch {
+        void queryClient.invalidateQueries({ queryKey: readStateQueryKey(userId) });
+      }
+    },
+    [queryClient, userId],
+  );
+
+  const markMatchesSeen = useCallback(
+    (at: number = Date.now()) =>
+      persist((current) =>
+        current.matchesSeenAt >= at ? null : { ...current, matchesSeenAt: at },
+      ),
+    [persist],
+  );
+
+  const markChatRead = useCallback(
+    (matchId: string, at: number = Date.now()) =>
+      persist((current) =>
+        (current.chats[matchId] ?? 0) >= at
+          ? null
+          : { ...current, chats: { ...current.chats, [matchId]: at } },
+      ),
+    [persist],
+  );
+
+  return { markMatchesSeen, markChatRead };
 }
 
 /** Unread counts per match id, given the other founders' messages. */

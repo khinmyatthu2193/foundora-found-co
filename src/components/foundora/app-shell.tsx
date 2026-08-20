@@ -1,12 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Menu, LogOut } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { FounderAvatar, Logo, PlanBadge } from "@/components/foundora/ui-bits";
-import { fetchInboxMessages, fetchIncomingInterests } from "@/lib/matching";
+import { fetchInboxMessages, fetchIncomingInterests, fetchMyMatches } from "@/lib/matching";
 import { fetchMyProfile } from "@/lib/profile";
 import { signOutUser } from "@/lib/auth";
 import { clearFoundoraUserState } from "@/lib/foundora";
@@ -58,12 +59,38 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
     queryFn: () => fetchMyProfile(userId),
   });
 
-  const matchesCount = (incoming.data ?? []).filter(
+  const matches = useQuery({
+    queryKey: ["matches", userId],
+    queryFn: fetchMyMatches,
+    refetchInterval: 30000,
+  });
+
+  const pendingInterests = (incoming.data ?? []).filter(
     (i) =>
       !i.interest_sent &&
       i.status === "pending" &&
       new Date(i.created_at).getTime() > readState.matchesSeenAt,
   ).length;
+
+  const newMatches = (matches.data ?? []).filter(
+    (m) => new Date(m.created_at).getTime() > readState.matchesSeenAt,
+  ).length;
+
+  const matchesCount = pendingInterests + newMatches;
+
+  // Celebrate a brand-new mutual match once per match.
+  const announced = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!readState.matchesSeenAt) return;
+    for (const m of matches.data ?? []) {
+      if (new Date(m.created_at).getTime() <= readState.matchesSeenAt) continue;
+      if (announced.current.has(m.match_id)) continue;
+      announced.current.add(m.match_id);
+      toast.success("🎉 New match found!", {
+        description: `You and ${m.anonymous_name} are both interested.`,
+      });
+    }
+  }, [matches.data, readState.matchesSeenAt]);
 
   const unread = unreadByMatch(
     (inbox.data ?? []).filter((m) => m.sender_id !== userId),

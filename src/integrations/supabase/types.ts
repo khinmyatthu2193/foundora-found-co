@@ -94,6 +94,30 @@ export type Database = {
           },
         ]
       }
+      notification_reads: {
+        Row: {
+          chats: Json
+          created_at: string
+          matches_seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chats?: Json
+          created_at?: string
+          matches_seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chats?: Json
+          created_at?: string
+          matches_seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           anonymous_name: string
