@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      compatibility_reports: {
+        Row: {
+          challenges: string[]
+          created_at: string
+          created_by: string
+          discussion_topics: string[]
+          id: string
+          match_id: string
+          score: number
+          strengths: string[]
+          updated_at: string
+        }
+        Insert: {
+          challenges?: string[]
+          created_at?: string
+          created_by: string
+          discussion_topics?: string[]
+          id?: string
+          match_id: string
+          score: number
+          strengths?: string[]
+          updated_at?: string
+        }
+        Update: {
+          challenges?: string[]
+          created_at?: string
+          created_by?: string
+          discussion_topics?: string[]
+          id?: string
+          match_id?: string
+          score?: number
+          strengths?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compatibility_reports_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interests: {
         Row: {
           created_at: string
@@ -245,6 +289,27 @@ export type Database = {
       is_match_member: {
         Args: { _match_id: string; _user_id: string }
         Returns: boolean
+      }
+      match_compatibility_inputs: {
+        Args: { p_match_id: string }
+        Returns: {
+          a_commitment: string
+          a_experience: string
+          a_hours: number
+          a_industries: string[]
+          a_skills: string[]
+          a_traits: string[]
+          a_working_style: string
+          b_commitment: string
+          b_experience: string
+          b_hours: number
+          b_industries: string[]
+          b_skills: string[]
+          b_traits: string[]
+          b_working_style: string
+          is_member: boolean
+          me_premium: boolean
+        }[]
       }
       match_header: {
         Args: { p_match_id: string }
