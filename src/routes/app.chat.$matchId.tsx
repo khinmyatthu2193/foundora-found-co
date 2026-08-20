@@ -141,6 +141,23 @@ function ChatPage() {
         otherName={other.anonymous_name}
       />
 
+      <GuidedConversation
+        className="mt-4"
+        userId={user.id}
+        matchId={matchId}
+        premium={plan.data === "premium"}
+      />
+
+      <ProjectDirectionCard className="mt-4" userId={user.id} matchId={matchId} />
+
+      <ProposalCard
+        className="mt-4"
+        userId={user.id}
+        matchId={matchId}
+        premium={plan.data === "premium"}
+      />
+
+
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
         <div className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto p-5">
           {messages.isLoading && (
