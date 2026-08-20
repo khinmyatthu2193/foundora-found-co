@@ -92,7 +92,7 @@ function Dashboard() {
     <Section className="pt-8">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft md:p-8">
         <p className="text-sm text-muted-foreground">
-          {state.auth?.email ? `Signed in as ${state.auth.email}` : "Welcome to Foundora"}
+          {user?.email ? `Signed in as ${user.email}` : "Welcome to Foundora"}
         </p>
         <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
           Ready to find your next collaborator?
