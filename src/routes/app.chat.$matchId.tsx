@@ -43,6 +43,7 @@ function ChatPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+  const { markChatRead } = useMarkRead(user.id);
 
   const plan = useQuery({
     queryKey: planQueryKey(user.id),

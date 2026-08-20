@@ -39,6 +39,7 @@ export const Route = createFileRoute("/app/matches")({
 function MatchesPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
+  const { markMatchesSeen } = useMarkRead(user.id);
 
   const matches = useQuery({
     queryKey: ["matches", user.id],
