@@ -109,7 +109,8 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
 Founder A: ${JSON.stringify(founder("a"))}
 Founder B: ${JSON.stringify(founder("b"))}
 Compatibility: ${JSON.stringify(report ?? "not generated")}
-Shared project direction: ${JSON.stringify(direction)}
+Shared project direction: ${JSON.stringify(workspaceReady ? workspace : direction)}
+Chosen founder roles: ${JSON.stringify(roles)}
 
 Return strictly this JSON shape:
 {"concept_summary": "<2 sentences>", "problem": "<1-2 sentences>", "target_users": "<1-2 sentences>", "solution": "<2 sentences>", "founder_roles": ["Founder A — ...", "Founder B — ..."], "mvp_scope": [3-5 short strings], "plan_30_days": ["Week 1 — ...", "Week 2 — ...", "Week 3 — ...", "Week 4 — ..."], "key_risks": [3 short strings]}`;
