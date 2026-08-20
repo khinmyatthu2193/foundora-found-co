@@ -42,6 +42,7 @@ export type DiscoveryFounder = TrustFlags & {
   desired_partner_traits: string[];
   interest_sent: boolean;
   is_matched: boolean;
+  is_premium: boolean;
 };
 
 export function rowToForm(row: ProfileRow): FounderProfile {

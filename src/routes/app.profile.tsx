@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { PlanCard } from "@/components/foundora/plan-card";
+import { AiInsightsCard, PlanBadge } from "@/components/foundora/ui-bits";
 import {
   FounderAvatar,
   PrivacyBadge,
@@ -261,7 +263,10 @@ function ProfilePage() {
                 <div className="flex items-center gap-4">
                   <FounderAvatar size="lg" path={p.avatarPath} name={p.anonName} />
                   <div>
-                    <h3 className="text-xl font-semibold">{p.anonName}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-xl font-semibold">{p.anonName}</h3>
+                      <PlanBadge premium={profile.subscription_status === "premium"} size="sm" />
+                    </div>
                     <TrustBadges className="mt-2" flags={trustFlags} />
                   </div>
                 </div>
@@ -355,6 +360,13 @@ function ProfilePage() {
 
           <div className="space-y-4">
             <CompletionCard score={completion.score} nextStep={completion.nextStep} />
+
+            <PlanCard userId={user.id} />
+
+            <AiInsightsCard
+              premium={profile.subscription_status === "premium"}
+              context="the founders you match with"
+            />
 
             <Card className="border-border shadow-soft">
               <CardContent className="space-y-5 p-6">

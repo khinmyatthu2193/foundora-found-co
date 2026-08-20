@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   EmptyState,
   FounderAvatar,
+  PlanBadge,
   PrivacyBadge,
   Section,
   Tag,
@@ -94,7 +95,10 @@ function MatchesPage() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
                       <FounderAvatar path={i.avatar_url} name={i.anonymous_name} />
-                      <h3 className="text-lg font-semibold">{i.anonymous_name}</h3>
+                      <div>
+                        <h3 className="text-lg font-semibold">{i.anonymous_name}</h3>
+                        <PlanBadge premium={i.is_premium} size="sm" className="mt-1" />
+                      </div>
                     </div>
                     <PrivacyBadge />
                   </div>
@@ -165,7 +169,10 @@ function MatchesPage() {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <FounderAvatar path={m.avatar_url} name={m.anonymous_name} />
-                    <h3 className="text-lg font-semibold">{m.anonymous_name}</h3>
+                    <div>
+                      <h3 className="text-lg font-semibold">{m.anonymous_name}</h3>
+                      <PlanBadge premium={m.is_premium} size="sm" className="mt-1" />
+                    </div>
                   </div>
                   <PrivacyBadge />
                 </div>

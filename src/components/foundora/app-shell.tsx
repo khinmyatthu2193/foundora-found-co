@@ -5,12 +5,13 @@ import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
-import { FounderAvatar, Logo } from "@/components/foundora/ui-bits";
+import { FounderAvatar, Logo, PlanBadge } from "@/components/foundora/ui-bits";
 import { fetchInboxMessages, fetchIncomingInterests } from "@/lib/matching";
 import { fetchMyProfile } from "@/lib/profile";
 import { signOutUser } from "@/lib/auth";
 import { clearFoundoraUserState } from "@/lib/foundora";
 import { unreadByMatch, useReadState } from "@/lib/notifications";
+import { fetchMyPlan, planQueryKey } from "@/lib/premium";
 
 const NAV = [
   { to: "/app", label: "Home" },
@@ -46,6 +47,12 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
     queryFn: fetchInboxMessages,
     refetchInterval: 15000,
   });
+  const plan = useQuery({
+    queryKey: planQueryKey(userId),
+    queryFn: () => fetchMyPlan(userId),
+  });
+  const premium = plan.data === "premium";
+
   const profile = useQuery({
     queryKey: ["my-profile", userId],
     queryFn: () => fetchMyProfile(userId),
@@ -102,7 +109,10 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
             ))}
           </nav>
 
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
+            <Link to="/app/profile" aria-label="Your plan">
+              <PlanBadge premium={premium} size="sm" />
+            </Link>
             <ThemeSelector />
             <AppearanceToggle />
             <Link to="/app/profile" aria-label="Your profile">
@@ -142,7 +152,10 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
                     </Link>
                   ))}
                 </div>
-                <div className="mt-8 flex items-center gap-2">
+                <div className="mt-6">
+                  <PlanBadge premium={premium} size="sm" />
+                </div>
+                <div className="mt-6 flex items-center gap-2">
                   <ThemeSelector />
                   <AppearanceToggle />
                 </div>
