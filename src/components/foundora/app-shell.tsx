@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { Logo } from "@/components/foundora/ui-bits";
 import { signOutUser } from "@/lib/auth";
+import { clearFoundoraUserState } from "@/lib/foundora";
 
 const NAV = [
   { to: "/app", label: "Home" },
@@ -24,8 +25,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const handleLogout = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
+    clearFoundoraUserState();
     await signOutUser();
-    navigate({ to: "/", replace: true });
+    navigate({ to: "/login", replace: true });
   };
 
 

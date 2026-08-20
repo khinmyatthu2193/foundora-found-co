@@ -56,8 +56,6 @@ export type MatchState = {
 };
 
 export type FoundoraState = {
-  auth: { email: string } | null;
-  profile: FounderProfile | null;
   interested: string[];
   passed: string[];
   matches: string[];
@@ -243,8 +241,6 @@ export const emptyMatchState: MatchState = {
 };
 
 const initialState: FoundoraState = {
-  auth: null,
-  profile: null,
   interested: [],
   passed: [],
   matches: [],
@@ -288,6 +284,15 @@ export function setState(updater: (s: FoundoraState) => FoundoraState) {
   emit();
 }
 
+export function clearFoundoraUserState() {
+  state = initialState;
+  hydrated = true;
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(KEY);
+  }
+  emit();
+}
+
 export function useFoundora() {
   const [snapshot, setSnapshot] = useState<FoundoraState>(state);
 
@@ -305,9 +310,6 @@ export function useFoundora() {
   }, []);
 
   const actions = {
-    login: (email: string) => setState((s) => ({ ...s, auth: { email } })),
-    logout: () => setState((s) => ({ ...s, auth: null })),
-    saveProfile: (profile: FounderProfile) => setState((s) => ({ ...s, profile })),
     pass: (id: string) =>
       setState((s) => ({ ...s, passed: [...new Set([...s.passed, id])] })),
     interested: (id: string) =>

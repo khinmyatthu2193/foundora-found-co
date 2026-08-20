@@ -36,8 +36,11 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { state } = useFoundora();
-  const { user } = useSession();
-  const { data: profile } = useQuery({ queryKey: ["my-profile"], queryFn: fetchMyProfile });
+  const { user } = Route.useRouteContext();
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile", user.id],
+    queryFn: () => fetchMyProfile(user.id),
+  });
   const hasProfile = Boolean(profile);
   const matchCount = state.matches.length;
   const workspaceReady = Object.values(state.matchState).some((m) => m.acceptMe && m.acceptThem);
