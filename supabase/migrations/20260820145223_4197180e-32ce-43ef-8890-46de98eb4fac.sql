@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.generate_anonymous_name() FROM PUBLIC, anon, authenticated;
