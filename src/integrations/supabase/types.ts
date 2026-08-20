@@ -58,6 +58,50 @@ export type Database = {
           },
         ]
       }
+      founder_collaborations: {
+        Row: {
+          created_at: string
+          founder_a_id: string
+          founder_a_status: string
+          founder_b_id: string
+          founder_b_status: string
+          id: string
+          match_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          founder_a_id: string
+          founder_a_status?: string
+          founder_b_id: string
+          founder_b_status?: string
+          id?: string
+          match_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          founder_a_id?: string
+          founder_a_status?: string
+          founder_b_id?: string
+          founder_b_status?: string
+          id?: string
+          match_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_collaborations_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interests: {
         Row: {
           created_at: string
@@ -319,11 +363,103 @@ export type Database = {
           },
         ]
       }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          collaboration_id: string
+          created_at: string
+          goals: Json
+          id: string
+          problem: string
+          project_name: string
+          solution: string
+          stage: string
+          target_users: string
+          updated_at: string
+        }
+        Insert: {
+          collaboration_id: string
+          created_at?: string
+          goals?: Json
+          id?: string
+          problem?: string
+          project_name?: string
+          solution?: string
+          stage?: string
+          target_users?: string
+          updated_at?: string
+        }
+        Update: {
+          collaboration_id?: string
+          created_at?: string
+          goals?: Json
+          id?: string
+          problem?: string
+          project_name?: string
+          solution?: string
+          stage?: string
+          target_users?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspaces_collaboration_id_fkey"
+            columns: ["collaboration_id"]
+            isOneToOne: true
+            referencedRelation: "founder_collaborations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      collaboration_state: {
+        Args: { p_match_id: string }
+        Returns: {
+          collaboration_id: string
+          my_status: string
+          partner_status: string
+          status: string
+          workspace_id: string
+        }[]
+      }
       discover_founders: {
         Args: never
         Returns: {
@@ -371,8 +507,16 @@ export type Database = {
           status: string
         }[]
       }
+      is_collab_member: {
+        Args: { _collaboration_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_match_member: {
         Args: { _match_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
       match_compatibility_inputs: {
@@ -427,6 +571,19 @@ export type Database = {
           skills: string[]
         }[]
       }
+      my_workspaces: {
+        Args: never
+        Returns: {
+          collaboration_id: string
+          match_id: string
+          partner_avatar: string
+          partner_name: string
+          project_name: string
+          stage: string
+          updated_at: string
+          workspace_id: string
+        }[]
+      }
       profile_strength: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
@@ -444,7 +601,30 @@ export type Database = {
           matched: boolean
         }[]
       }
+      set_collaboration_decision: {
+        Args: { p_accept: boolean; p_match_id: string }
+        Returns: {
+          collaboration_id: string
+          my_status: string
+          partner_status: string
+          status: string
+          workspace_id: string
+        }[]
+      }
+      set_my_workspace_role: {
+        Args: { p_role: string; p_workspace_id: string }
+        Returns: string
+      }
       suggest_anonymous_name: { Args: never; Returns: string }
+      workspace_roles: {
+        Args: { p_workspace_id: string }
+        Returns: {
+          anonymous_name: string
+          avatar_url: string
+          role: string
+          user_is_me: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
