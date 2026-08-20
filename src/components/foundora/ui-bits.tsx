@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, Lock, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { avatarSignedUrl } from "@/lib/profile";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -227,6 +229,115 @@ export function TrustBadges({ flags, className }: { flags: TrustFlagsView; class
           {label}
         </span>
       ))}
+    </div>
+  );
+}
+
+/* ------------------------------- plans ------------------------------------ */
+
+/** Plan badge. `premium` renders Founder Pro ⭐, otherwise Explorer. */
+export function PlanBadge({
+  premium,
+  size = "md",
+  className,
+}: {
+  premium: boolean;
+  size?: "sm" | "md";
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border font-semibold",
+        size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs",
+        premium
+          ? "border-primary/40 bg-primary/12 text-primary"
+          : "border-border bg-muted text-muted-foreground",
+        className,
+      )}
+    >
+      {premium ? (
+        <>
+          <Sparkles className="size-3" /> Founder Pro ⭐
+        </>
+      ) : (
+        "Explorer"
+      )}
+    </span>
+  );
+}
+
+/** "✨ Recommended for you" marker on premium founders in discovery. */
+export function RecommendedBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1 text-xs font-semibold text-primary",
+        className,
+      )}
+    >
+      <Sparkles className="size-3" /> Recommended for you
+    </span>
+  );
+}
+
+/**
+ * AI insights placeholder. Locked for free founders, unlocked (but not yet
+ * wired to a model) for Founder Pro.
+ */
+export function AiInsightsCard({
+  premium,
+  context = "this founder",
+  className,
+}: {
+  premium: boolean;
+  context?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-5",
+        premium ? "border-primary/30 bg-primary/5" : "border-dashed border-border bg-muted/40",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2">
+        {premium ? (
+          <Sparkles className="size-4 text-primary" />
+        ) : (
+          <Lock className="size-4 text-muted-foreground" />
+        )}
+        <h3 className="text-sm font-semibold">AI Founder Insights</h3>
+      </div>
+      {premium ? (
+        <>
+          <p className="mt-2 text-sm text-muted-foreground">
+            See how your skills, availability and working style line up with {context}.
+          </p>
+          <button
+            type="button"
+            onClick={() => toast.message("Coming soon", {
+              description: "Compatibility reports arrive in a later release.",
+            })}
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Generate Compatibility Report
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Upgrade to Founder Pro to unlock AI compatibility analysis.
+          </p>
+          <Link
+            to="/app/profile"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Try Founder Pro
+          </Link>
+        </>
+      )}
     </div>
   );
 }
