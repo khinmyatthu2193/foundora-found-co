@@ -9,6 +9,7 @@ export type FounderProfile = {
   realName: string;
   skills: string[];
   buildIdea: string;
+  bio: string;
   industries: string[];
   hoursPerWeek: number;
   experience: string;
