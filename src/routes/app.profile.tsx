@@ -524,6 +524,20 @@ function ProfilePage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="bio">Short public bio</Label>
+              <Textarea
+                id="bio"
+                rows={3}
+                value={form.bio}
+                onChange={(e) => set("bio", e.target.value)}
+                placeholder="How you like to build, what you're great at — no names or contact details."
+              />
+              <p className="text-xs text-muted-foreground">
+                Shown anonymously on your discovery card. Keep it identity-free.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label htmlFor="idea">What you want to build</Label>
                 <PrivateField>Private</PrivateField>

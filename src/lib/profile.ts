@@ -7,6 +7,7 @@ export type ProfileRow = {
   real_name: string | null;
   skills: string[];
   what_to_build: string | null;
+  bio: string | null;
   industry_interests: string[];
   available_hours: number;
   experience_level: string | null;
@@ -33,6 +34,7 @@ export type DiscoveryFounder = TrustFlags & {
   discovery_id: string;
   anonymous_name: string;
   avatar_url: string | null;
+  bio: string | null;
   skills: string[];
   industry_interests: string[];
   available_hours: number;
@@ -41,6 +43,7 @@ export type DiscoveryFounder = TrustFlags & {
   working_style: string | null;
   commitment_level: string | null;
   desired_partner_traits: string[];
+  profile_strength: number;
   interest_sent: boolean;
   is_matched: boolean;
   is_premium: boolean;
@@ -52,6 +55,7 @@ export function rowToForm(row: ProfileRow): FounderProfile {
     realName: row.real_name ?? "",
     skills: row.skills ?? [],
     buildIdea: row.what_to_build ?? "",
+    bio: row.bio ?? "",
     industries: row.industry_interests ?? [],
     hoursPerWeek: row.available_hours ?? 20,
     experience: row.experience_level ?? "Intermediate",
@@ -72,6 +76,7 @@ export const emptyProfileForm: FounderProfile = {
   realName: "",
   skills: [],
   buildIdea: "",
+  bio: "",
   industries: [],
   hoursPerWeek: 20,
   experience: "Intermediate",
@@ -99,6 +104,7 @@ function formToRow(form: FounderProfile, userId: string) {
     real_name: form.realName.trim() || null,
     skills: form.skills,
     what_to_build: form.buildIdea.trim() || null,
+    bio: form.bio.trim() || null,
     industry_interests: form.industries,
     available_hours: form.hoursPerWeek,
     experience_level: form.experience,
@@ -115,7 +121,7 @@ function formToRow(form: FounderProfile, userId: string) {
 }
 
 const PROFILE_COLUMNS =
-  "id, anonymous_name, real_name, skills, what_to_build, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits, avatar_url, linkedin_url, github_url, portfolio_url, website_url, subscription_status";
+  "id, anonymous_name, real_name, skills, what_to_build, bio, industry_interests, available_hours, experience_level, looking_for, working_style, commitment_level, desired_partner_traits, avatar_url, linkedin_url, github_url, portfolio_url, website_url, subscription_status";
 
 function describe(error: { message: string; code?: string; details?: string; hint?: string }) {
   if (error.code === "42501" || /row-level security/i.test(error.message)) {
@@ -178,6 +184,9 @@ export function profileCompletion(form: FounderProfile, emailVerified = false): 
     { done: form.skills.length > 0, hint: "Add your skills." },
     { done: form.industries.length > 0, hint: "Pick your industry interests." },
     { done: Boolean(form.experience), hint: "Set your experience level." },
+    { done: form.workingStyle.length > 0, hint: "Describe your working style." },
+    { done: Boolean(form.commitment), hint: "Set your commitment level." },
+    { done: Boolean(form.bio.trim()), hint: "Write a short public bio (no personal details)." },
     { done: form.traits.length > 0, hint: "Add the partner traits you're looking for." },
     { done: form.lookingFor.length > 0, hint: "Say what you're looking for in a partner." },
     { done: Boolean(form.linkedinUrl), hint: "Add LinkedIn to increase trust." },

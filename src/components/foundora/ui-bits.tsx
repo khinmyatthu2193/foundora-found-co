@@ -233,6 +233,26 @@ export function TrustBadges({ flags, className }: { flags: TrustFlagsView; class
   );
 }
 
+export function StrengthPill({ value, className }: { value: number; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground",
+        className,
+      )}
+      title="Profile strength: how complete this founder's profile is"
+    >
+      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-muted">
+        <span
+          className="block h-full rounded-full bg-primary"
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        />
+      </span>
+      Profile strength: {value}%
+    </span>
+  );
+}
+
 /* ------------------------------- plans ------------------------------------ */
 
 /** Plan badge. `premium` renders Founder Pro ⭐, otherwise Explorer. */

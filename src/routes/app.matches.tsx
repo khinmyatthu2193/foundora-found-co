@@ -13,6 +13,7 @@ import {
   PrivacyBadge,
   Section,
   Tag,
+  StrengthPill,
   TrustBadges,
 } from "@/components/foundora/ui-bits";
 import { fetchIncomingInterests, fetchMyMatches, respondToInterest } from "@/lib/matching";
@@ -104,6 +105,7 @@ function MatchesPage() {
                     </div>
                     <PrivacyBadge />
                   </div>
+                  <StrengthPill value={i.profile_strength} />
                   <TrustBadges flags={i} />
                   <div className="flex flex-wrap gap-2">
                     {i.skills.slice(0, 4).map((s) => (
@@ -178,6 +180,7 @@ function MatchesPage() {
                   </div>
                   <PrivacyBadge />
                 </div>
+                <StrengthPill value={m.profile_strength} />
                 <TrustBadges flags={m} />
                 <div className="flex flex-wrap gap-2">
                   {m.skills.slice(0, 3).map((s) => (
