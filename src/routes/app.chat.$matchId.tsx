@@ -41,6 +41,29 @@ export const Route = createFileRoute("/app/chat/$matchId")({
   component: ChatPage,
 });
 
+/** 10:32 AM */
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function isSameDay(a: string, b: string) {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
+/** "Today", "Yesterday" or a readable date. */
+function formatDayLabel(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
 function ChatPage() {
   const { matchId } = useParams({ from: "/app/chat/$matchId" });
   const { user } = Route.useRouteContext();
