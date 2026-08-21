@@ -251,6 +251,13 @@ export async function regenerateAnonymousName(): Promise<string> {
   return data as unknown as string;
 }
 
+/** True when the anonymous name is free (case-insensitive) for the current user. */
+export async function isAnonymousNameAvailable(name: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("anonymous_name_available", { p_name: name });
+  if (error) throw new Error("Could not check that name right now. Please try again.");
+  return Boolean(data);
+}
+
 export async function fetchEmailVerified(): Promise<boolean> {
   const { data, error } = await supabase.rpc("my_email_verified");
   if (error) return false;
