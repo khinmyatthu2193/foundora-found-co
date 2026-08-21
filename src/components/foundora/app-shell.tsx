@@ -1,9 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Pencil, Settings, UserRound } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { FounderAvatar, Logo, PlanBadge } from "@/components/foundora/ui-bits";
@@ -16,7 +24,6 @@ import { fetchMyPlan, planQueryKey } from "@/lib/premium";
 
 const NAV = [
   { to: "/app", label: "Home" },
-  { to: "/app/profile", label: "Profile" },
   { to: "/app/discover", label: "Discover" },
   { to: "/app/franchise", label: "Franchise" },
   { to: "/app/matches", label: "Matches" },
