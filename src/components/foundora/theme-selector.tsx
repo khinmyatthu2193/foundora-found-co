@@ -10,9 +10,9 @@ import {
 import { THEMES, useAppearance, useTheme } from "@/lib/foundora";
 import { cn } from "@/lib/utils";
 
-/** Compact colour-theme dropdown (Sky / Lavender / Neutral). */
+/** Compact icon-only colour-theme dropdown. */
 export function ThemeSelector({
-  showLabel = true,
+  showLabel = false,
   className,
 }: {
   showLabel?: boolean;
@@ -25,10 +25,11 @@ export function ThemeSelector({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
-          aria-label="Choose colour theme"
-          className={cn("gap-2", className)}
+          variant="ghost"
+          size="icon"
+          aria-label={`Colour theme: ${current?.label ?? "Sky"}`}
+          title={`Colour theme: ${current?.label ?? "Sky"}`}
+          className={cn("relative", className)}
         >
           <Palette className="size-4 text-primary" />
           {showLabel && <span className="hidden sm:inline">{current?.label ?? "Sky"}</span>}

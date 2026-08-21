@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 /* ---------------------------------- types --------------------------------- */
 
-export type ThemeName = "sky" | "lavender" | "neutral";
+export type ThemeName = "sky" | "ocean" | "midnight" | "forest" | "royal";
 
 export type FounderProfile = {
   anonName: string;
@@ -180,8 +180,10 @@ const THEME_KEY = "foundora.theme";
 
 export const THEMES: { id: ThemeName; label: string; swatch: string[] }[] = [
   { id: "sky", label: "Sky", swatch: ["#5BA7F7", "#EAF4FF", "#16324F"] },
-  { id: "lavender", label: "Lavender", swatch: ["#8B7BE8", "#F1EEFC", "#332B57"] },
-  { id: "neutral", label: "Neutral", swatch: ["#5A6779", "#EFF1F4", "#2A3140"] },
+  { id: "ocean", label: "Ocean", swatch: ["#1F6FD0", "#DCEBFB", "#0E2A45"] },
+  { id: "midnight", label: "Midnight", swatch: ["#7AA2E3", "#243049", "#111A2E"] },
+  { id: "forest", label: "Forest", swatch: ["#2E8B62", "#DEF1E6", "#12352A"] },
+  { id: "royal", label: "Royal", swatch: ["#6B3FD4", "#EAE2FB", "#291548"] },
 ];
 
 export function useTheme() {
