@@ -180,19 +180,40 @@ function ChatPage() {
               private.
             </p>
           )}
-          {messages.data?.map((msg) => {
+          {messages.data?.map((msg, i) => {
             const mine = msg.sender_id === user.id;
+            const prev = messages.data?.[i - 1];
+            const showDate = !prev || !isSameDay(prev.created_at, msg.created_at);
             return (
-              <div key={msg.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                <div
-                  className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
-                    mine
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground",
-                  )}
-                >
-                  {msg.content}
+              <div key={msg.id}>
+                {showDate && (
+                  <div className="my-3 flex items-center gap-3">
+                    <span className="h-px flex-1 bg-border" />
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {formatDayLabel(msg.created_at)}
+                    </span>
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                )}
+                <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+                      mine
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground",
+                    )}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    <p
+                      className={cn(
+                        "mt-1 text-[11px] tabular-nums",
+                        mine ? "text-primary-foreground/70 text-right" : "text-muted-foreground",
+                      )}
+                    >
+                      {formatTime(msg.created_at)}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
