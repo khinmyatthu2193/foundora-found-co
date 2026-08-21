@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   emptyProfileForm,
   fetchEmailVerified,
+  isAnonymousNameAvailable,
   fetchMyProfile,
   profileCompletion,
   regenerateAnonymousName,
@@ -47,6 +48,10 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/profile")({
+  validateSearch: (search: Record<string, unknown>): { edit?: boolean } => {
+    const raw = search["edit"];
+    return raw === true || raw === "true" ? { edit: true } : {};
+  },
   head: () => ({
     meta: [
       { title: "Founder profile — Foundora" },
@@ -127,10 +132,13 @@ function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [customSkill, setCustomSkill] = useState("");
 
+  const search = Route.useSearch();
+  const wantsEdit = search.edit === true;
+
   useEffect(() => {
     if (profile) {
       setForm(rowToForm(profile));
-      setEditing(false);
+      setEditing(wantsEdit);
     } else if (profile === null) {
       setEditing(true);
       setForm((f) => (f.anonName ? f : emptyProfileForm));
@@ -139,7 +147,7 @@ function ProfilePage() {
         .then((name) => setForm((f) => (f.anonName ? f : { ...f, anonName: name })))
         .catch(() => undefined);
     }
-  }, [profile]);
+  }, [profile, wantsEdit]);
 
   const saveMutation = useMutation({
     mutationFn: async (next: FounderProfile) => upsertMyProfile(next, user.id),
@@ -195,7 +203,7 @@ function ProfilePage() {
     setCustomSkill("");
   };
 
-  const save = () => {
+  const save = async () => {
     const problem = validateProfileForm(form);
     if (problem) {
       setSaveError(problem);
@@ -203,7 +211,25 @@ function ProfilePage() {
       return;
     }
     setSaveError(null);
-    saveMutation.mutate(form);
+
+    if (form.anonName.trim().toLowerCase() !== (profile?.anonymous_name ?? "").toLowerCase()) {
+      try {
+        const free = await isAnonymousNameAvailable(form.anonName);
+        if (!free) {
+          const msg = "That anonymous name is already taken. Please pick another one.";
+          setSaveError(msg);
+          toast.error(msg);
+          return;
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Could not check that name.";
+        setSaveError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
+
+    saveMutation.mutate({ ...form, anonName: form.anonName.trim() });
   };
 
   const verified = emailVerified.data ?? false;
@@ -361,7 +387,9 @@ function ProfilePage() {
           <div className="space-y-4">
             <CompletionCard score={completion.score} nextStep={completion.nextStep} />
 
-            <PlanCard userId={user.id} />
+            <div id="settings" className="scroll-mt-24">
+              <PlanCard userId={user.id} />
+            </div>
 
             <AiInsightsCard
               premium={profile.subscription_status === "premium"}
@@ -441,12 +469,13 @@ function ProfilePage() {
 
             <div className="space-y-2">
               <Label htmlFor="anon">Anonymous founder name</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Input
                   id="anon"
                   value={form.anonName}
-                  readOnly
-                  placeholder="Generating…"
+                  onChange={(e) => set("anonName", e.target.value)}
+                  placeholder="BrightNova"
+                  maxLength={32}
                   className="max-w-xs"
                 />
                 <Button
@@ -459,7 +488,8 @@ function ProfilePage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Friendly and unique — it never reveals your real identity.
+                Choose your own (at least 3 characters, must be unique) or keep the generated one —
+                it never reveals your real identity.
               </p>
             </div>
 

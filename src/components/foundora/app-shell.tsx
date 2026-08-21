@@ -1,9 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Pencil, Settings, UserRound } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { FounderAvatar, Logo, PlanBadge } from "@/components/foundora/ui-bits";
@@ -16,7 +24,6 @@ import { fetchMyPlan, planQueryKey } from "@/lib/premium";
 
 const NAV = [
   { to: "/app", label: "Home" },
-  { to: "/app/profile", label: "Profile" },
   { to: "/app/discover", label: "Discover" },
   { to: "/app/franchise", label: "Franchise" },
   { to: "/app/matches", label: "Matches" },
@@ -143,16 +150,47 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
             </Link>
             <ThemeSelector />
             <AppearanceToggle />
-            <Link to="/app/profile" aria-label="Your profile">
-              <FounderAvatar
-                size="sm"
-                path={profile.data?.avatar_url ?? null}
-                name={profile.data?.anonymous_name ?? "Founder"}
-              />
-            </Link>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="size-4" /> Logout
-            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="rounded-full ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  <FounderAvatar
+                    size="sm"
+                    path={profile.data?.avatar_url ?? null}
+                    name={profile.data?.anonymous_name ?? "Founder"}
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="truncate">
+                  {profile.data?.anonymous_name ?? "Founder"}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/app/profile">
+                    <UserRound className="size-4" /> Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/app/profile" search={{ edit: true }}>
+                    <Pencil className="size-4" /> Edit profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/app/profile" hash="settings">
+                    <Settings className="size-4" /> Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void handleLogout()}>
+                  <LogOut className="size-4" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex items-center gap-1 md:hidden">
@@ -179,6 +217,23 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
 
                     </Link>
                   ))}
+                </div>
+                <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">
+                  <Link
+                    to="/app/profile"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/app/profile"
+                    search={{ edit: true }}
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    Edit profile
+                  </Link>
                 </div>
                 <div className="mt-6">
                   <PlanBadge premium={premium} size="sm" />

@@ -152,6 +152,9 @@ export function validateProfileForm(form: FounderProfile): string | null {
   if (!form.anonName.trim()) {
     return "Your anonymous name is missing. Tap “Generate another name” to get one.";
   }
+  if (form.anonName.trim().length < 3) {
+    return "Your anonymous name needs at least 3 characters.";
+  }
   if (form.skills.length === 0) {
     return "Please add at least one skill so founders can understand your strengths.";
   }
@@ -249,6 +252,13 @@ export async function regenerateAnonymousName(): Promise<string> {
   const { data, error } = await supabase.rpc("regenerate_my_anonymous_name");
   if (error) throw new Error("Could not generate a new name. Please try again.");
   return data as unknown as string;
+}
+
+/** True when the anonymous name is free (case-insensitive) for the current user. */
+export async function isAnonymousNameAvailable(name: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("anonymous_name_available", { p_name: name });
+  if (error) throw new Error("Could not check that name right now. Please try again.");
+  return Boolean(data);
 }
 
 export async function fetchEmailVerified(): Promise<boolean> {

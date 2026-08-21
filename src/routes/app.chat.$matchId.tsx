@@ -41,6 +41,29 @@ export const Route = createFileRoute("/app/chat/$matchId")({
   component: ChatPage,
 });
 
+/** 10:32 AM */
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function isSameDay(a: string, b: string) {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
+/** "Today", "Yesterday" or a readable date. */
+function formatDayLabel(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
 function ChatPage() {
   const { matchId } = useParams({ from: "/app/chat/$matchId" });
   const { user } = Route.useRouteContext();
@@ -76,7 +99,7 @@ function ChatPage() {
   });
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
   }, [messages.data?.length]);
 
   // Viewing the conversation marks everything in it as read.
@@ -170,7 +193,7 @@ function ChatPage() {
 
 
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
-        <div className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto p-5">
+        <div className="flex max-h-[55vh] min-h-64 scroll-smooth flex-col gap-1 overflow-y-auto p-5">
           {messages.isLoading && (
             <p className="text-sm text-muted-foreground">Loading messages…</p>
           )}
@@ -180,19 +203,40 @@ function ChatPage() {
               private.
             </p>
           )}
-          {messages.data?.map((msg) => {
+          {messages.data?.map((msg, i) => {
             const mine = msg.sender_id === user.id;
+            const prev = messages.data?.[i - 1];
+            const showDate = !prev || !isSameDay(prev.created_at, msg.created_at);
             return (
-              <div key={msg.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                <div
-                  className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
-                    mine
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground",
-                  )}
-                >
-                  {msg.content}
+              <div key={msg.id}>
+                {showDate && (
+                  <div className="my-3 flex items-center gap-3">
+                    <span className="h-px flex-1 bg-border" />
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {formatDayLabel(msg.created_at)}
+                    </span>
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                )}
+                <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+                      mine
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground",
+                    )}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    <p
+                      className={cn(
+                        "mt-1 text-[11px] tabular-nums",
+                        mine ? "text-primary-foreground/70 text-right" : "text-muted-foreground",
+                      )}
+                    >
+                      {formatTime(msg.created_at)}
+                    </p>
+                  </div>
                 </div>
               </div>
             );

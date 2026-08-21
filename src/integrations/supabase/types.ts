@@ -567,6 +567,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymous_name_available: { Args: { p_name: string }; Returns: boolean }
       collaboration_state: {
         Args: { p_match_id: string }
         Returns: {
