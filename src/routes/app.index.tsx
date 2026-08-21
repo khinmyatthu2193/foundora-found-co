@@ -217,7 +217,7 @@ function Dashboard() {
           <div className="min-w-0">
             <div className="flex items-center gap-3">
               <FounderAvatar
-                path={profile?.avatar_url}
+                path={profile?.avatar_url ?? null}
                 name={profile?.anonymous_name ?? "Founder"}
                 size="md"
               />
