@@ -99,7 +99,7 @@ function ChatPage() {
   });
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
   }, [messages.data?.length]);
 
   // Viewing the conversation marks everything in it as read.
@@ -193,7 +193,7 @@ function ChatPage() {
 
 
       <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
-        <div className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto p-5">
+        <div className="flex max-h-[55vh] min-h-64 scroll-smooth flex-col gap-1 overflow-y-auto p-5">
           {messages.isLoading && (
             <p className="text-sm text-muted-foreground">Loading messages…</p>
           )}
