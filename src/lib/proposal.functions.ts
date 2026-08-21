@@ -42,6 +42,7 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
       .eq("match_id", data.matchId)
       .maybeSingle();
 
+    let workspaceId: string | null = null;
     let workspace: {
       project_name: string;
       problem: string;
