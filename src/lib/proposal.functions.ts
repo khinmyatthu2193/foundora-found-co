@@ -174,7 +174,12 @@ Return strictly this JSON shape:
     const { data: saved, error: saveError } = await supabase
       .from("startup_proposals")
       .upsert(
-        { match_id: data.matchId, created_by: userId, proposal_json: payload },
+        {
+          match_id: data.matchId,
+          workspace_id: workspaceId,
+          created_by: userId,
+          proposal_json: payload,
+        },
         { onConflict: "match_id" },
       )
       .select("id, match_id, proposal_json, created_at, updated_at")
