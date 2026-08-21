@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PremiumGate } from "@/components/foundora/premium-gate";
-import { EmptyState, Section, Tag } from "@/components/foundora/ui-bits";
+import { EmptyState, Section } from "@/components/foundora/ui-bits";
 import {
   applicationSchema,
   fetchFranchise,
@@ -236,12 +236,12 @@ function FranchiseDetailPage() {
                   <div>
                     <p className="text-sm font-semibold">Your request has been sent successfully.</p>
                     <p className="text-sm text-muted-foreground">
-                      The company will contact you soon.
+                      The franchise company will review your information and contact you soon.
                     </p>
                   </div>
                 </div>
               ) : !applying ? (
-                <Button onClick={() => setApplying(true)}>Apply now</Button>
+                <Button onClick={() => setApplying(true)}>Apply for Franchise</Button>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
@@ -360,7 +360,7 @@ function FranchiseDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you sure you want to request contact from this company?
+              Are you sure you want to request contact from this franchise company?
             </AlertDialogTitle>
             <AlertDialogDescription>
               Your name, phone number and email will be shared with {f.company_name}.
