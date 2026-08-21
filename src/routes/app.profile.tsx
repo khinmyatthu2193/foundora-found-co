@@ -387,7 +387,9 @@ function ProfilePage() {
           <div className="space-y-4">
             <CompletionCard score={completion.score} nextStep={completion.nextStep} />
 
-            <PlanCard userId={user.id} />
+            <div id="settings" className="scroll-mt-24">
+              <PlanCard userId={user.id} />
+            </div>
 
             <AiInsightsCard
               premium={profile.subscription_status === "premium"}
