@@ -43,8 +43,11 @@ export function formatMmk(amount: number): string {
   return `${new Intl.NumberFormat("en-US").format(amount)} MMK`;
 }
 
+export const CONTACT_FOR_DETAILS = "Contact company for current franchise details";
+
 export function formatInvestmentRange(min: number, max: number): string {
-  if (!max || max === min) return formatMmk(min);
+  if (!min && !max) return CONTACT_FOR_DETAILS;
+  if (!max || max === min) return `Starting from ${formatMmk(min)}`;
   return `${formatMmk(min)} – ${formatMmk(max)}`;
 }
 
