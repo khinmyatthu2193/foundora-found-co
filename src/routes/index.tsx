@@ -1,16 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Compass,
+  Brain,
+  Building2,
   Handshake,
-  MessagesSquare,
-  Eye,
-  Hammer,
+  Lock,
   Menu,
+  MessagesSquare,
+  Rocket,
   ShieldCheck,
   Sparkles,
+  UserPlus,
   Users,
-  Rocket,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,60 +19,91 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AppearanceToggle, ThemeSelector } from "@/components/foundora/theme-selector";
 import { Logo, PrivacyBadge, Tag } from "@/components/foundora/ui-bits";
+import heroImage from "@/assets/founder-network.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Foundora — Find the right person to build with" },
+      { title: "Foundora — Find the right founder. Build the right future." },
       {
         name: "description",
         content:
-          "Foundora is a privacy-first co-founder matching platform: discover founders anonymously, match mutually, and turn a match into a startup.",
+          "Foundora helps entrepreneurs discover compatible co-founders, collaborate privately, and turn ideas into real businesses.",
       },
-      { property: "og:title", content: "Foundora — Find the right person to build with" },
+      { property: "og:title", content: "Foundora — Find the right founder. Build the right future." },
       {
         property: "og:description",
         content:
-          "Discover compatible founders privately, connect anonymously, and build something worth starting.",
+          "Discover compatible founders anonymously, match mutually, and build something worth starting.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
 });
 
-const JOURNEY = [
-  { icon: Compass, title: "Discover", text: "Browse founders anonymously." },
-  { icon: Handshake, title: "Match", text: "Both sides choose each other." },
-  { icon: MessagesSquare, title: "Chat", text: "Talk before revealing who you are." },
-  { icon: Eye, title: "Reveal", text: "Identities unlock by mutual consent." },
-  { icon: Hammer, title: "Build", text: "Shape a shared project direction." },
+const STEPS = [
+  {
+    icon: UserPlus,
+    title: "Create your founder profile",
+    text: "Share skills, availability and what you want to build — identity stays private.",
+  },
+  {
+    icon: Users,
+    title: "Discover compatible partners",
+    text: "Browse founders anonymously and signal interest only when it feels right.",
+  },
+  {
+    icon: Rocket,
+    title: "Build together",
+    text: "Move from a match into a shared workspace and a real startup plan.",
+  },
 ];
 
 const FEATURES = [
   {
-    icon: ShieldCheck,
-    title: "Discover Privately",
-    text: "Explore founders through skills, interests, commitment, and working style without exposing personal identity.",
+    icon: Handshake,
+    title: "Founder Matching",
+    text: "Mutual interest turns into a match — no cold outreach, no noise.",
   },
   {
-    icon: Handshake,
-    title: "Match Intentionally",
-    text: "Interest becomes a match only when both founders choose each other.",
+    icon: Brain,
+    title: "AI Compatibility Analysis",
+    text: "A deterministic score plus AI explanation of strengths and friction points.",
   },
   {
     icon: MessagesSquare,
-    title: "Connect Safely",
-    text: "Start through anonymous conversation before deciding whether to reveal identity.",
+    title: "Private Chat",
+    text: "Talk anonymously and reveal identity only by mutual consent.",
   },
   {
     icon: Sparkles,
-    title: "Understand Compatibility",
-    text: "Use AI-assisted insights to explore strengths, friction points, and useful discussion topics.",
+    title: "Founder Workspace",
+    text: "Agree to build, then align on roles, goals and an AI startup proposal.",
   },
   {
-    icon: Rocket,
-    title: "Build Together",
-    text: "Turn shared direction into a structured AI-assisted project proposal.",
+    icon: Building2,
+    title: "Franchise Opportunities",
+    text: "Founder Pro members explore vetted franchise listings and apply directly.",
+  },
+];
+
+const TRUST = [
+  {
+    icon: ShieldCheck,
+    title: "Anonymous discovery",
+    text: "Real names, emails and startup ideas stay hidden until both sides agree.",
+  },
+  {
+    icon: Lock,
+    title: "Secure profiles",
+    text: "Every profile is owner-only by default and protected at the database level.",
+  },
+  {
+    icon: Users,
+    title: "Founder-focused community",
+    text: "Built for people who actually want to start something, not for networking noise.",
   },
 ];
 
@@ -79,6 +111,7 @@ const LINKS = [
   { href: "#top", label: "Home" },
   { href: "#how-it-works", label: "How It Works" },
   { href: "#features", label: "Features" },
+  { href: "#trust", label: "Trust" },
 ];
 
 function Landing() {
@@ -152,110 +185,98 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto w-full max-w-6xl px-4 pt-12 pb-4 sm:px-6 md:pt-16">
-        <div className="grid items-center gap-8 md:grid-cols-[1.1fr_0.9fr] md:gap-10">
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/12 via-background to-background"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-primary/20 blur-3xl"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pt-14 pb-12 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:pt-20">
           <div>
             <PrivacyBadge label="Privacy-first co-founder matching" />
-            <h1 className="mt-5 text-4xl font-semibold md:text-5xl">
-              Find the right person to build with.
+            <h1 className="mt-5 text-4xl leading-tight font-semibold tracking-tight md:text-6xl">
+              Find the right founder.{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Build the right future.
+              </span>
             </h1>
-            <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
-              Foundora helps founders discover compatible people, connect privately, and turn a
-              promising match into something worth building together.
+            <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
+              Foundora helps entrepreneurs discover compatible co-founders, collaborate, and turn
+              ideas into real businesses.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
                 <Link to="/signup">
-                  Find your co-founder <ArrowRight className="size-4" />
+                  Find Your Co-Founder <ArrowRight className="size-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/signup">Create founder profile</Link>
+                <Link to="/signup">Explore Opportunities</Link>
               </Button>
-              <Button asChild variant="ghost" size="lg">
-                <a href="#how-it-works">See how it works</a>
-              </Button>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              <Tag tone="primary">Anonymous by default</Tag>
+              <Tag>Mutual matching</Tag>
+              <Tag>AI compatibility</Tag>
             </div>
           </div>
 
-          <Card className="border-border shadow-card">
-            <CardContent className="space-y-4 p-6">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold">Founder #A27</span>
-                <PrivacyBadge />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Design-led product builder who ships weekly and loves early user interviews.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["React", "UI/UX", "Product Management"].map((s) => (
-                  <Tag key={s} tone="primary">
-                    {s}
-                  </Tag>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {["AI", "SaaS", "25 hrs/week", "Serious part-time"].map((s) => (
-                  <Tag key={s}>{s}</Tag>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button variant="outline" size="sm" disabled>
-                  Pass
-                </Button>
-                <Button size="sm" disabled>
-                  Interested
-                </Button>
-              </div>
-              <p className="text-center text-xs text-muted-foreground">
-                Real names stay hidden until both founders agree.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="relative">
+            <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-card">
+              <img
+                src={heroImage}
+                alt="Founders collaborating around connected anonymous profile cards"
+                width={1280}
+                height={1024}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <Card className="absolute -bottom-6 left-4 hidden w-64 border-border shadow-card sm:block">
+              <CardContent className="space-y-2 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold">Founder #A27</span>
+                  <PrivacyBadge />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Real names stay hidden until both founders agree.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-10 sm:px-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold md:text-3xl">How Foundora works</h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            A deliberate path from anonymous discovery to a real, shared project.
+      <section id="how-it-works" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-semibold md:text-4xl">How it works</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
+            Three steps from a private profile to a shared company.
           </p>
         </div>
 
         <div className="relative">
-          <span
-            aria-hidden
-            className="absolute top-9 right-8 left-8 hidden h-px bg-border lg:block"
-          />
-          <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {JOURNEY.map((s, i) => (
-              <Card
-                key={s.title}
-                className="relative h-full border-border shadow-soft transition-shadow hover:shadow-card"
-              >
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                      <s.icon className="size-4" />
+          <span aria-hidden className="absolute top-12 right-16 left-16 hidden h-px bg-border md:block" />
+          <div className="relative grid gap-5 md:grid-cols-3">
+            {STEPS.map((s, i) => (
+              <Card key={s.title} className="h-full border-border shadow-soft">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <s.icon className="size-5" />
                     </span>
-                    <span className="text-xs font-semibold text-muted-foreground">
+                    <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Step {i + 1}
                     </span>
                   </div>
-                  <h3 className="mt-3 font-semibold">{s.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{s.text}</p>
+                  <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{s.text}</p>
                 </CardContent>
-                {i < JOURNEY.length - 1 && (
-                  <span
-                    aria-hidden
-                    className="absolute top-1/2 -right-3 hidden -translate-y-1/2 text-muted-foreground/60 lg:block"
-                  >
-                    <ArrowRight className="size-4" />
-                  </span>
-                )}
               </Card>
             ))}
           </div>
@@ -263,59 +284,74 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section id="features" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-10 sm:px-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold md:text-3xl">
-            Built for how founders actually meet
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Five ideas that keep matching intentional, private, and useful.
-          </p>
+      <section id="features" className="scroll-mt-20 border-y border-border bg-muted/30 py-16">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-semibold md:text-4xl">Everything a founding team needs</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
+              From first anonymous conversation to a structured startup proposal.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
+            {FEATURES.map((f, i) => (
+              <Card
+                key={f.title}
+                className={`h-full border-border bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card lg:col-span-2 ${
+                  i === 3 ? "lg:col-start-2" : ""
+                }`}
+              >
+                <CardContent className="p-6">
+                  <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
+                    <f.icon className="size-5" />
+                  </span>
+                  <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{f.text}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-          {FEATURES.map((f, i) => (
-            <Card
-              key={f.title}
-              className={`h-full border-border shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-card lg:col-span-2 ${
-                i === 3 ? "lg:col-start-2" : ""
-              }`}
-            >
-              <CardContent className="flex h-full flex-col p-6">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <f.icon className="size-5" />
-                </span>
-                <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.text}</p>
+      </section>
+
+      {/* Trust */}
+      <section id="trust" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-semibold md:text-4xl">Built on trust, not exposure</h2>
+        </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {TRUST.map((t) => (
+            <Card key={t.title} className="h-full border-border shadow-soft">
+              <CardContent className="p-6">
+                <t.icon className="size-6 text-primary" />
+                <h3 className="mt-4 text-lg font-semibold">{t.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t.text}</p>
               </CardContent>
             </Card>
           ))}
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="mx-auto w-full max-w-6xl px-4 pt-4 pb-12 sm:px-6">
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-6 py-10 text-center shadow-soft">
-          <Users className="size-8 text-primary" />
-          <h2 className="text-2xl font-semibold md:text-3xl">
-            Your next co-founder is one honest conversation away.
-          </h2>
-          <p className="max-w-xl text-sm text-muted-foreground">
+      {/* CTA */}
+      <section className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card px-6 py-14 text-center shadow-card">
+          <h2 className="text-3xl font-semibold md:text-4xl">Ready to build something meaningful?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground md:text-base">
             Create a founder profile in a few minutes and start discovering people building in your
             space.
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link to="/signup">Find your co-founder</Link>
+              <Link to="/signup">Join Foundora</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to="/signup">Create founder profile</Link>
+              <Link to="/demo">Try demo mode</Link>
             </Button>
           </div>
         </div>
       </section>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 py-7 sm:flex-row sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
           <Logo />
           <p className="text-sm text-muted-foreground">
             Foundora — privacy-first co-founder matching.

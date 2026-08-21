@@ -18,6 +18,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppDiscoverRouteImport } from './routes/app.discover'
 import { Route as AppMatchesRouteImport } from './routes/app.matches'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as AppChatMatchIdRouteImport } from './routes/app.chat.$matchId'
@@ -69,6 +70,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWorkspaceRoute = AppWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app'
     | '/app/chat/$matchId'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
@@ -266,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/workspace': {
       id: '/app/workspace'
       path: '/workspace'
@@ -308,6 +327,7 @@ interface AppRouteChildren {
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppMatchesRoute: typeof AppMatchesRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
   AppIndexRoute: typeof AppIndexRoute
   AppChatMatchIdRoute: typeof AppChatMatchIdRoute
@@ -320,6 +340,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiscoverRoute: AppDiscoverRoute,
   AppMatchesRoute: AppMatchesRoute,
   AppProfileRoute: AppProfileRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,
   AppIndexRoute: AppIndexRoute,
   AppChatMatchIdRoute: AppChatMatchIdRoute,
