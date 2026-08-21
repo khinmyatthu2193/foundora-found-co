@@ -102,6 +102,113 @@ export type Database = {
           },
         ]
       }
+      franchise_applications: {
+        Row: {
+          budget: string
+          created_at: string
+          email: string
+          experience: string
+          franchise_id: string
+          full_name: string
+          id: string
+          location: string
+          message: string
+          phone: string
+          preferred_location: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: string
+          created_at?: string
+          email: string
+          experience?: string
+          franchise_id: string
+          full_name: string
+          id?: string
+          location?: string
+          message?: string
+          phone: string
+          preferred_location?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: string
+          created_at?: string
+          email?: string
+          experience?: string
+          franchise_id?: string
+          full_name?: string
+          id?: string
+          location?: string
+          message?: string
+          phone?: string
+          preferred_location?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "franchise_applications_franchise_id_fkey"
+            columns: ["franchise_id"]
+            isOneToOne: false
+            referencedRelation: "franchises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      franchises: {
+        Row: {
+          available_locations: string[]
+          category: string
+          company_name: string
+          contact_information: string
+          created_at: string
+          description: string
+          id: string
+          investment_max_mmk: number
+          investment_min_mmk: number
+          is_active: boolean
+          logo_url: string | null
+          support_details: string[]
+          updated_at: string
+        }
+        Insert: {
+          available_locations?: string[]
+          category?: string
+          company_name: string
+          contact_information?: string
+          created_at?: string
+          description?: string
+          id?: string
+          investment_max_mmk?: number
+          investment_min_mmk?: number
+          is_active?: boolean
+          logo_url?: string | null
+          support_details?: string[]
+          updated_at?: string
+        }
+        Update: {
+          available_locations?: string[]
+          category?: string
+          company_name?: string
+          contact_information?: string
+          created_at?: string
+          description?: string
+          id?: string
+          investment_max_mmk?: number
+          investment_min_mmk?: number
+          is_active?: boolean
+          logo_url?: string | null
+          support_details?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       interests: {
         Row: {
           created_at: string
@@ -525,6 +632,7 @@ export type Database = {
         Args: { _match_id: string; _user_id: string }
         Returns: boolean
       }
+      is_premium_user: { Args: { _user_id: string }; Returns: boolean }
       is_workspace_member: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
