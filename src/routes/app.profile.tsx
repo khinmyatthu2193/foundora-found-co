@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   emptyProfileForm,
   fetchEmailVerified,
+  isAnonymousNameAvailable,
   fetchMyProfile,
   profileCompletion,
   regenerateAnonymousName,
