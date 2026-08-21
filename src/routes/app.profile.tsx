@@ -47,9 +47,10 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/profile")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    edit: search.edit === true || search.edit === "true" ? true : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { edit?: boolean } => {
+    const raw = search["edit"];
+    return raw === true || raw === "true" ? { edit: true } : {};
+  },
   head: () => ({
     meta: [
       { title: "Founder profile — Foundora" },
