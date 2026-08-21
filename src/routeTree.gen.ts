@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppDiscoverRouteImport } from './routes/app.discover'
 import { Route as AppMatchesRouteImport } from './routes/app.matches'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as AppChatMatchIdRouteImport } from './routes/app.chat.$matchId'
@@ -31,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -63,6 +70,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWorkspaceRoute = AppWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
@@ -92,11 +104,13 @@ const AppFranchiseIdRoute = AppFranchiseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -106,11 +120,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -122,11 +138,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/demo': typeof DemoRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/matches': typeof AppMatchesRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
@@ -139,11 +157,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/demo'
     | '/login'
     | '/signup'
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
@@ -153,11 +173,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/demo'
     | '/login'
     | '/signup'
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app'
     | '/app/chat/$matchId'
@@ -168,11 +190,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/demo'
     | '/login'
     | '/signup'
     | '/app/discover'
     | '/app/matches'
     | '/app/profile'
+    | '/app/settings'
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
@@ -184,6 +208,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DemoRoute: typeof DemoRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -202,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -246,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/workspace': {
       id: '/app/workspace'
       path: '/workspace'
@@ -288,6 +327,7 @@ interface AppRouteChildren {
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppMatchesRoute: typeof AppMatchesRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
   AppIndexRoute: typeof AppIndexRoute
   AppChatMatchIdRoute: typeof AppChatMatchIdRoute
@@ -300,6 +340,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiscoverRoute: AppDiscoverRoute,
   AppMatchesRoute: AppMatchesRoute,
   AppProfileRoute: AppProfileRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,
   AppIndexRoute: AppIndexRoute,
   AppChatMatchIdRoute: AppChatMatchIdRoute,
@@ -313,6 +354,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DemoRoute: DemoRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }

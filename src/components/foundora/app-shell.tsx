@@ -181,7 +181,7 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/app/profile" hash="settings">
+                  <Link to="/app/settings">
                     <Settings className="size-4" /> Settings
                   </Link>
                 </DropdownMenuItem>
