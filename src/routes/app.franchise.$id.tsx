@@ -93,6 +93,9 @@ function FranchiseDetailPage() {
       setSent(true);
       setApplying(false);
       setForm(EMPTY);
+      toast.success("Your franchise request has been sent successfully.", {
+        description: "The company will review your information and contact you soon.",
+      });
       void queryClient.invalidateQueries({ queryKey: myApplicationsQueryKey(user.id) });
     },
     onError: (e) => {
