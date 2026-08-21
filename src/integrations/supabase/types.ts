@@ -336,6 +336,7 @@ export type Database = {
           match_id: string
           proposal_json: Json
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
@@ -344,6 +345,7 @@ export type Database = {
           match_id: string
           proposal_json: Json
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
@@ -352,6 +354,7 @@ export type Database = {
           match_id?: string
           proposal_json?: Json
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -359,6 +362,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: true
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_proposals_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]

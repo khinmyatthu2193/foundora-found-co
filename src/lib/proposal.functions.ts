@@ -42,6 +42,7 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
       .eq("match_id", data.matchId)
       .maybeSingle();
 
+    let workspaceId: string | null = null;
     let workspace: {
       project_name: string;
       problem: string;
@@ -59,6 +60,7 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
         .eq("collaboration_id", collab.id)
         .maybeSingle();
       if (ws) {
+        workspaceId = ws.id;
         workspace = ws;
         const { data: members } = await supabase
           .from("workspace_members")
@@ -172,7 +174,12 @@ Return strictly this JSON shape:
     const { data: saved, error: saveError } = await supabase
       .from("startup_proposals")
       .upsert(
-        { match_id: data.matchId, created_by: userId, proposal_json: payload },
+        {
+          match_id: data.matchId,
+          workspace_id: workspaceId,
+          created_by: userId,
+          proposal_json: payload,
+        },
         { onConflict: "match_id" },
       )
       .select("id, match_id, proposal_json, created_at, updated_at")
