@@ -391,9 +391,9 @@ function Field({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  error?: string;
-  type?: string;
-  placeholder?: string;
+  error?: string | undefined;
+  type?: string | undefined;
+  placeholder?: string | undefined;
 }) {
   return (
     <div className="space-y-1.5">

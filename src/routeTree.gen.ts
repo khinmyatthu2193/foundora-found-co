@@ -21,8 +21,7 @@ import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as AppChatMatchIdRouteImport } from './routes/app.chat.$matchId'
 import { Route as AppFranchiseIndexRouteImport } from './routes/app.franchise.index'
-import { Route as AppOpportunitiesIndexRouteImport } from './routes/app.opportunities.index'
-import { Route as AppOpportunitiesIdRouteImport } from './routes/app.opportunities.$id'
+import { Route as AppFranchiseIdRouteImport } from './routes/app.franchise.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -84,14 +83,9 @@ const AppFranchiseIndexRoute = AppFranchiseIndexRouteImport.update({
   path: '/franchise/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppOpportunitiesIndexRoute = AppOpportunitiesIndexRouteImport.update({
-  id: '/opportunities/',
-  path: '/opportunities/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOpportunitiesIdRoute = AppOpportunitiesIdRouteImport.update({
-  id: '/opportunities/$id',
-  path: '/opportunities/$id',
+const AppFranchiseIdRoute = AppFranchiseIdRouteImport.update({
+  id: '/franchise/$id',
+  path: '/franchise/$id',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -106,10 +100,9 @@ export interface FileRoutesByFullPath {
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
-  '/app/opportunities/$id': typeof AppOpportunitiesIdRoute
+  '/app/franchise/$id': typeof AppFranchiseIdRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/franchise/': typeof AppFranchiseIndexRoute
-  '/app/opportunities/': typeof AppOpportunitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -121,10 +114,9 @@ export interface FileRoutesByTo {
   '/app/workspace': typeof AppWorkspaceRoute
   '/app': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
-  '/app/opportunities/$id': typeof AppOpportunitiesIdRoute
+  '/app/franchise/$id': typeof AppFranchiseIdRoute
   '/app/chat': typeof AppChatIndexRoute
   '/app/franchise': typeof AppFranchiseIndexRoute
-  '/app/opportunities': typeof AppOpportunitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -138,10 +130,9 @@ export interface FileRoutesById {
   '/app/workspace': typeof AppWorkspaceRoute
   '/app/': typeof AppIndexRoute
   '/app/chat/$matchId': typeof AppChatMatchIdRoute
-  '/app/opportunities/$id': typeof AppOpportunitiesIdRoute
+  '/app/franchise/$id': typeof AppFranchiseIdRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/franchise/': typeof AppFranchiseIndexRoute
-  '/app/opportunities/': typeof AppOpportunitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -156,10 +147,9 @@ export interface FileRouteTypes {
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
-    | '/app/opportunities/$id'
+    | '/app/franchise/$id'
     | '/app/chat/'
     | '/app/franchise/'
-    | '/app/opportunities/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -171,10 +161,9 @@ export interface FileRouteTypes {
     | '/app/workspace'
     | '/app'
     | '/app/chat/$matchId'
-    | '/app/opportunities/$id'
+    | '/app/franchise/$id'
     | '/app/chat'
     | '/app/franchise'
-    | '/app/opportunities'
   id:
     | '__root__'
     | '/'
@@ -187,10 +176,9 @@ export interface FileRouteTypes {
     | '/app/workspace'
     | '/app/'
     | '/app/chat/$matchId'
-    | '/app/opportunities/$id'
+    | '/app/franchise/$id'
     | '/app/chat/'
     | '/app/franchise/'
-    | '/app/opportunities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -286,18 +274,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFranchiseIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/opportunities/': {
-      id: '/app/opportunities/'
-      path: '/opportunities'
-      fullPath: '/app/opportunities/'
-      preLoaderRoute: typeof AppOpportunitiesIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/opportunities/$id': {
-      id: '/app/opportunities/$id'
-      path: '/opportunities/$id'
-      fullPath: '/app/opportunities/$id'
-      preLoaderRoute: typeof AppOpportunitiesIdRouteImport
+    '/app/franchise/$id': {
+      id: '/app/franchise/$id'
+      path: '/franchise/$id'
+      fullPath: '/app/franchise/$id'
+      preLoaderRoute: typeof AppFranchiseIdRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -310,10 +291,9 @@ interface AppRouteChildren {
   AppWorkspaceRoute: typeof AppWorkspaceRoute
   AppIndexRoute: typeof AppIndexRoute
   AppChatMatchIdRoute: typeof AppChatMatchIdRoute
-  AppOpportunitiesIdRoute: typeof AppOpportunitiesIdRoute
+  AppFranchiseIdRoute: typeof AppFranchiseIdRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppFranchiseIndexRoute: typeof AppFranchiseIndexRoute
-  AppOpportunitiesIndexRoute: typeof AppOpportunitiesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -323,10 +303,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppWorkspaceRoute: AppWorkspaceRoute,
   AppIndexRoute: AppIndexRoute,
   AppChatMatchIdRoute: AppChatMatchIdRoute,
-  AppOpportunitiesIdRoute: AppOpportunitiesIdRoute,
+  AppFranchiseIdRoute: AppFranchiseIdRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppFranchiseIndexRoute: AppFranchiseIndexRoute,
-  AppOpportunitiesIndexRoute: AppOpportunitiesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
