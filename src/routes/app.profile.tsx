@@ -441,12 +441,13 @@ function ProfilePage() {
 
             <div className="space-y-2">
               <Label htmlFor="anon">Anonymous founder name</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Input
                   id="anon"
                   value={form.anonName}
-                  readOnly
-                  placeholder="Generating…"
+                  onChange={(e) => set("anonName", e.target.value)}
+                  placeholder="BrightNova"
+                  maxLength={32}
                   className="max-w-xs"
                 />
                 <Button
@@ -459,7 +460,8 @@ function ProfilePage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Friendly and unique — it never reveals your real identity.
+                Choose your own (at least 3 characters, must be unique) or keep the generated one —
+                it never reveals your real identity.
               </p>
             </div>
 

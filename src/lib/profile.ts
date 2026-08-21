@@ -152,6 +152,9 @@ export function validateProfileForm(form: FounderProfile): string | null {
   if (!form.anonName.trim()) {
     return "Your anonymous name is missing. Tap “Generate another name” to get one.";
   }
+  if (form.anonName.trim().length < 3) {
+    return "Your anonymous name needs at least 3 characters.";
+  }
   if (form.skills.length === 0) {
     return "Please add at least one skill so founders can understand your strengths.";
   }
