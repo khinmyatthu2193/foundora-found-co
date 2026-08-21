@@ -202,7 +202,7 @@ function ProfilePage() {
     setCustomSkill("");
   };
 
-  const save = () => {
+  const save = async () => {
     const problem = validateProfileForm(form);
     if (problem) {
       setSaveError(problem);
@@ -210,7 +210,25 @@ function ProfilePage() {
       return;
     }
     setSaveError(null);
-    saveMutation.mutate(form);
+
+    if (form.anonName.trim().toLowerCase() !== (profile?.anonymous_name ?? "").toLowerCase()) {
+      try {
+        const free = await isAnonymousNameAvailable(form.anonName);
+        if (!free) {
+          const msg = "That anonymous name is already taken. Please pick another one.";
+          setSaveError(msg);
+          toast.error(msg);
+          return;
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Could not check that name.";
+        setSaveError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
+
+    saveMutation.mutate({ ...form, anonName: form.anonName.trim() });
   };
 
   const verified = emailVerified.data ?? false;
