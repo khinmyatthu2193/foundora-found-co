@@ -205,13 +205,18 @@ function FranchiseDetailPage() {
                 <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                   Support provided
                 </h2>
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
                   {f.support_details.length ? (
-                    f.support_details.map((s) => <Tag key={s}>{s}</Tag>)
+                    f.support_details.map((s) => (
+                      <li key={s} className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                        {s}
+                      </li>
+                    ))
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <li className="text-sm text-muted-foreground">—</li>
                   )}
-                </div>
+                </ul>
               </div>
             </CardContent>
           </Card>
