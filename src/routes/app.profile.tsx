@@ -131,10 +131,13 @@ function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [customSkill, setCustomSkill] = useState("");
 
+  const search = Route.useSearch();
+  const wantsEdit = search.edit === true;
+
   useEffect(() => {
     if (profile) {
       setForm(rowToForm(profile));
-      setEditing(false);
+      setEditing(wantsEdit);
     } else if (profile === null) {
       setEditing(true);
       setForm((f) => (f.anonName ? f : emptyProfileForm));
@@ -143,7 +146,7 @@ function ProfilePage() {
         .then((name) => setForm((f) => (f.anonName ? f : { ...f, anonName: name })))
         .catch(() => undefined);
     }
-  }, [profile]);
+  }, [profile, wantsEdit]);
 
   const saveMutation = useMutation({
     mutationFn: async (next: FounderProfile) => upsertMyProfile(next, user.id),
