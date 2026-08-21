@@ -218,6 +218,23 @@ export function AppShell({ children, userId }: { children: ReactNode; userId: st
                     </Link>
                   ))}
                 </div>
+                <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">
+                  <Link
+                    to="/app/profile"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/app/profile"
+                    search={{ edit: true }}
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    Edit profile
+                  </Link>
+                </div>
                 <div className="mt-6">
                   <PlanBadge premium={premium} size="sm" />
                 </div>
