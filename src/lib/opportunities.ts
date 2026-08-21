@@ -1,6 +1,5 @@
-import { Briefcase } from "lucide-react";
-
 export const INDUSTRIES = ["AI", "FinTech", "Sustainability", "HealthTech", "EdTech", "Creator Economy"] as const;
+export type Industry = (typeof INDUSTRIES)[number];
 
 export type Opportunity = {
   id: string;
