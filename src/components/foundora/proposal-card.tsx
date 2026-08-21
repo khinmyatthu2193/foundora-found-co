@@ -109,13 +109,19 @@ export function ProposalCard({
         <p className="mt-2 text-sm text-muted-foreground">Loading proposal…</p>
       )}
 
+      {run.isPending && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          AI is creating your startup direction…
+        </p>
+      )}
+
       {!proposal.isLoading && !data && (
         <>
           <p className="mt-2 text-sm text-muted-foreground">
             {!premium
-              ? "Founder Pro required to generate AI proposal"
+              ? "Founder Pro required to generate AI startup proposals."
               : ready
-                ? "Turn your shared direction into a concise startup proposal."
+                ? "Generate your startup proposal with AI."
                 : (notReadyText ?? "Complete project direction before generating proposal.")}
           </p>
           {premium ? (
