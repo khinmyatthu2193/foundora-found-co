@@ -60,6 +60,7 @@ export const generateStartupProposal = createServerFn({ method: "POST" })
         .eq("collaboration_id", collab.id)
         .maybeSingle();
       if (ws) {
+        workspaceId = ws.id;
         workspace = ws;
         const { data: members } = await supabase
           .from("workspace_members")
