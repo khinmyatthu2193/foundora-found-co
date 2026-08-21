@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PremiumGate } from "@/components/foundora/premium-gate";
-import { EmptyState, Section, Tag } from "@/components/foundora/ui-bits";
+import { EmptyState, Section } from "@/components/foundora/ui-bits";
 import {
   applicationSchema,
   fetchFranchise,
@@ -205,13 +205,18 @@ function FranchiseDetailPage() {
                 <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                   Support provided
                 </h2>
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
                   {f.support_details.length ? (
-                    f.support_details.map((s) => <Tag key={s}>{s}</Tag>)
+                    f.support_details.map((s) => (
+                      <li key={s} className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                        {s}
+                      </li>
+                    ))
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <li className="text-sm text-muted-foreground">—</li>
                   )}
-                </div>
+                </ul>
               </div>
             </CardContent>
           </Card>
@@ -231,12 +236,12 @@ function FranchiseDetailPage() {
                   <div>
                     <p className="text-sm font-semibold">Your request has been sent successfully.</p>
                     <p className="text-sm text-muted-foreground">
-                      The company will contact you soon.
+                      The franchise company will review your information and contact you soon.
                     </p>
                   </div>
                 </div>
               ) : !applying ? (
-                <Button onClick={() => setApplying(true)}>Apply now</Button>
+                <Button onClick={() => setApplying(true)}>Apply for Franchise</Button>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
@@ -355,7 +360,7 @@ function FranchiseDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you sure you want to request contact from this company?
+              Are you sure you want to request contact from this franchise company?
             </AlertDialogTitle>
             <AlertDialogDescription>
               Your name, phone number and email will be shared with {f.company_name}.

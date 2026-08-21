@@ -143,7 +143,7 @@ function FranchisePage() {
 
                   <Button asChild className="mt-auto w-full">
                     <Link to="/app/franchise/$id" params={{ id: f.id }}>
-                      View details
+                      View Details
                     </Link>
                   </Button>
                 </CardContent>
